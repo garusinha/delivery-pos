@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Agency POS V8.4</title>
+    <title>Agency POS V8.5</title>
     <style>
         :root { --primary: #1e293b; --accent: #3b82f6; --success: #10b981; --danger: #f43f5e; --bg: #f1f5f9; }
-        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); color: #334155; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); color: #334155; }
         header { background: var(--primary); color: white; padding: 20px 15px 15px; text-align: center; font-weight: 800; }
         nav { display: flex; background: white; position: sticky; top: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 100; }
         .nav-link { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-weight: 700; font-size: 0.75rem; border-bottom: 3px solid transparent; }
@@ -16,37 +16,35 @@
         .container { padding: 12px; max-width: 600px; margin: auto; padding-bottom: 100px; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #e2e8f0; }
         label { display: block; font-size: 0.7rem; font-weight: 800; margin-bottom: 4px; color: #64748b; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; box-sizing: border-box; -webkit-appearance: none; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; active { opacity: 0.7; } }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
         .btn-blue { background: var(--accent); color: white; }
         .btn-green { background: var(--success); color: white; }
         .btn-gray { background: #94a3b8; color: white; }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f8fafc; }
 
-        /* PRINT PREVIEW OVERLAY */
-        #print-preview-layer { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: white; z-index: 9999; padding: 20px; box-sizing: border-box; 
-        }
-
-        /* HIDDEN IFRAME FOR IPHONE HOME SCREEN PRINTING */
-        #print-frame { position: absolute; width: 0; height: 0; border: none; }
+        /* PRINT OVERLAY */
+        #print-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        #print-frame { position: absolute; width: 0; height: 0; border: none; visibility: hidden; }
     </style>
 </head>
 <body>
 
 <iframe id="print-frame"></iframe>
 
-<div id="print-preview-layer">
-    <div id="bill-render-area" style="font-family: monospace; color: black;"></div>
-    <div style="margin-top: 25px; display: flex; gap: 10px;">
-        <button class="btn-green" onclick="triggerPwaPrint()">PRINT BILL</button>
-        <button class="btn-gray" onclick="closePrint()">DONE</button>
+<div id="print-overlay">
+    <div id="print-area-content"></div>
+    <div style="margin-top: 25px; display: flex; gap: 10px;" id="print-ctrls">
+        <button class="btn-green" onclick="executePrintJob()">CONFIRM PRINT</button>
+        <button class="btn-gray" onclick="closePrintOverlay()">CLOSE</button>
     </div>
 </div>
 
 <div id="app-shell">
-    <header>AGENCY POS V8.4</header>
+    <header>AGENCY POS V8.5</header>
     <nav>
         <div class="nav-link active" onclick="showView('pos')">BILLING</div>
         <div class="nav-link" onclick="showView('stock')">STOCKS</div>
@@ -63,10 +61,10 @@
             </div>
             <div id="pos-billing" style="display:none">
                 <button class="btn-gray" onclick="backToShops()" style="margin-bottom:10px">← BACK</button>
-                <h2 id="billing-shop-name" style="margin:0 0 10px 0;"></h2>
-                <div class="card"><label>Sales Rep</label><select id="bill-rep-select"><option>Ishan</option><option>Rohan</option></select></div>
+                <h2 id="billing-shop-name"></h2>
+                <div class="card"><label>Rep</label><select id="bill-rep-select"><option>Ishan</option><option>Rohan</option></select></div>
                 <div class="card">
-                    <label>Product</label><select id="bill-item-select" onchange="calcFreeIssue()"></select>
+                    <label>Item</label><select id="bill-item-select" onchange="calcFreeIssue()"></select>
                     <div style="display:flex; gap:10px">
                         <div style="flex:2"><input type="number" id="bill-qty" value="1" oninput="calcFreeIssue()"></div>
                         <div style="flex:1"><input type="number" id="bill-free" value="0"></div>
@@ -77,30 +75,37 @@
                     <div id="cart-content"></div>
                     <label>Discount</label><input type="number" id="bill-discount" value="0" oninput="updateBillTotals()">
                     <div style="display:flex; justify-content:space-between; font-size:1.4rem; font-weight:900;"><span>TOTAL:</span><span id="bill-net-total">0.00</span></div>
-                    <button class="btn-green" style="margin-top:15px" onclick="finalizeBill()">GENERATE INVOICE</button>
+                    <button class="btn-green" style="margin-top:15px" onclick="generateBill()">FINALIZE & PRINT</button>
                 </div>
             </div>
         </div>
 
         <div id="view-stock" style="display:none"><div class="card"><h3>Inventory</h3><div id="stock-list-container"></div></div></div>
-        <div id="view-admin" style="display:none"><div class="card"><input type="date" id="report-date-picker" onchange="runSummary()"><div id="summary-report"></div></div></div>
+
+        <div id="view-admin" style="display:none">
+            <div class="card">
+                <label>Select Date</label><input type="date" id="report-date-picker" onchange="runSummary()">
+                <div id="summary-report-container"></div>
+            </div>
+        </div>
+
         <div id="view-setup" style="display:none">
             <div class="card">
-                <input type="text" id="adm-p-name" placeholder="Item"><input type="number" id="adm-p-price" placeholder="Price"><input type="number" id="adm-p-stock" placeholder="Stock"><input type="number" id="adm-p-scheme" placeholder="Scheme">
+                <input type="text" id="adm-p-name" placeholder="Item Name"><input type="number" id="adm-p-price" placeholder="Price"><input type="number" id="adm-p-stock" placeholder="Stock"><input type="number" id="adm-p-scheme" placeholder="Scheme">
                 <button class="btn-green" onclick="addProItem()">SAVE ITEM</button>
                 <hr style="margin:15px 0"><input type="text" id="adm-r-name" placeholder="Route"><button class="btn-blue" onclick="addProRoute()">SAVE ROUTE</button>
                 <hr style="margin:15px 0"><select id="adm-r-select"></select><input type="text" id="adm-s-name" placeholder="Shop Name"><button class="btn-blue" onclick="addProShop()">SAVE SHOP</button>
             </div>
-            <button onclick="clearSystem()" style="background:var(--danger); color:white">RESET ALL DATA</button>
+            <button onclick="clearSystem()" style="background:var(--danger); color:white">RESET SYSTEM</button>
         </div>
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('pos_v84')) || { items: [], routes: [], sales: [] };
+    let db = JSON.parse(localStorage.getItem('pos_v85')) || { items: [], routes: [], sales: [] };
     let cart = []; let activeShopName = "";
 
-    function sync() { localStorage.setItem('pos_v84', JSON.stringify(db)); refreshAll(); }
+    function sync() { localStorage.setItem('pos_v85', JSON.stringify(db)); refreshAll(); }
     function showView(id) {
         ['view-pos', 'view-stock', 'view-admin', 'view-setup'].forEach(v => document.getElementById(v).style.display = 'none');
         document.getElementById('view-' + id).style.display = 'block';
@@ -120,56 +125,107 @@
     function updateCartUI() { document.getElementById('cart-content').innerHTML = cart.map(c => `<div class="item-row"><span>${c.name} x${c.qty} (F:${c.free})</span> <span>${(c.price*c.qty).toFixed(2)}</span></div>`).join(''); updateBillTotals(); }
     function updateBillTotals() { const sub = cart.reduce((s,c)=>s+(c.price*c.qty),0); const disc = parseFloat(document.getElementById('bill-discount').value||0); document.getElementById('bill-net-total').innerText = (sub-disc).toFixed(2); }
 
-    // --- NEW IFRAME-BASED PRINTING FOR HOME SCREEN APPS ---
-    function finalizeBill() {
+    // --- ENHANCED PRINT ENGINE ---
+    function generateBill() {
         if(!cart.length) return;
         const rep = document.getElementById('bill-rep-select').value;
+        const disc = parseFloat(document.getElementById('bill-discount').value || 0);
         const net = document.getElementById('bill-net-total').innerText;
         
-        let billHtml = `<div style="text-align:center; font-family:monospace;">
-            <h3>INVOICE</h3><h2>${activeShopName}</h2><p>REP: ${rep}<br>${new Date().toLocaleString()}</p>
+        let html = `<div style="text-align:center; font-family:monospace; color:black;">
+            <h2 style="margin-bottom:5px;">INVOICE</h2>
+            <h1 style="margin:0;">${activeShopName}</h1>
+            <p>Date: ${new Date().toLocaleDateString()}<br>Time: ${new Date().toLocaleTimeString()}<br>Rep: ${rep}</p>
             <hr style="border:1px dashed #000;">`;
         cart.forEach(c => {
-            billHtml += `<div style="display:flex; justify-content:space-between;"><span>${c.name} x${c.qty} (F:${c.free})</span> <span>${(c.price*c.qty).toFixed(2)}</span></div>`;
+            html += `<div style="display:flex; justify-content:space-between; margin:3px 0;"><span>${c.name} x${c.qty} (F:${c.free})</span> <span>${(c.price*c.qty).toFixed(2)}</span></div>`;
             db.items[c.itemIdx].stock -= (c.qty + c.free);
         });
-        billHtml += `<hr style="border:1px dashed #000;"><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>TOTAL:</span> <span>${net}</span></div></div>`;
+        html += `<hr style="border:1px dashed #000;">
+            <div style="display:flex; justify-content:space-between;"><span>Discount:</span> <span>-${disc.toFixed(2)}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:bold; margin-top:5px;"><span>NET TOTAL:</span> <span>${net}</span></div>
+            <p style="margin-top:20px;">*** Thank You ***</p></div>`;
 
-        db.sales.push({ date: new Date().toISOString().split('T')[0], shop: activeShopName, rep: rep, total: parseFloat(net), html: billHtml });
+        db.sales.push({ date: new Date().toISOString().split('T')[0], shop: activeShopName, rep: rep, total: parseFloat(net), disc: disc, items: [...cart], html: html });
         sync();
-        
-        document.getElementById('bill-render-area').innerHTML = billHtml;
-        document.getElementById('print-preview-layer').style.display = 'block';
+        openPrintOverlay(html);
     }
 
-    function triggerPwaPrint() {
+    function openPrintOverlay(content) {
+        document.getElementById('print-area-content').innerHTML = content;
+        document.getElementById('print-overlay').style.display = 'block';
+    }
+
+    function executePrintJob() {
         const frame = document.getElementById('print-frame');
-        const billContent = document.getElementById('bill-render-area').innerHTML;
-        
+        const content = document.getElementById('print-area-content').innerHTML;
         const doc = frame.contentWindow.document;
+        
+        // RE-INITIALIZE FRAME TO PREVENT CRASHING ON 2nd PRINT
         doc.open();
-        doc.write('<html><head><style>body{font-family:monospace;padding:10px;}</style></head><body>' + billContent + '</body></html>');
+        doc.write('<html><head><style>body{font-family:monospace;padding:20px;color:black;} .f{display:flex;justify-content:space-between;}</style></head><body>' + content + '</body></html>');
         doc.close();
 
-        // Small delay to let frame load content before printing
         setTimeout(() => {
             frame.contentWindow.focus();
             frame.contentWindow.print();
         }, 500);
     }
 
-    function closePrint() {
-        document.getElementById('print-preview-layer').style.display = 'none';
-        showView('pos');
-    }
+    function closePrintOverlay() { document.getElementById('print-overlay').style.display = 'none'; showView('pos'); }
 
+    // --- ADVANCED SUMMARY REPORT ---
     function runSummary() {
-        const d = document.getElementById('report-date-picker').value;
-        const sales = db.sales.filter(s => s.date === d);
-        document.getElementById('summary-report').innerHTML = sales.map(s => `<div class="card"><b>${s.shop}</b>: ${s.total.toFixed(2)}<br><button class="btn-blue" style="padding:5px; margin-top:5px; height:auto" onclick="reprintSafe(\`${s.html}\`)">REPRINT</button></div>`).join('') || "No Sales.";
-    }
-    function reprintSafe(h) { document.getElementById('bill-render-area').innerHTML = h; document.getElementById('print-preview-layer').style.display = 'block'; }
+        const selDate = document.getElementById('report-date-picker').value;
+        const daySales = db.sales.filter(s => s.date === selDate);
+        if(!daySales.length) { document.getElementById('summary-report-container').innerHTML = "No Records."; return; }
 
+        let totalColl = 0; let totalDisc = 0;
+        let repSum = { Ishan: 0, Rohan: 0 };
+        let itemSum = {};
+
+        let html = `<h3>SUMMARY: ${selDate}</h3>`;
+        html += `<table><tr><th>Shop</th><th>Rep</th><th>Disc</th><th>Total</th></tr>`;
+        
+        daySales.forEach(s => {
+            totalColl += s.total;
+            totalDisc += (s.disc || 0);
+            repSum[s.rep] += s.total;
+            html += `<tr><td>${s.shop}</td><td>${s.rep}</td><td>${(s.disc || 0).toFixed(2)}</td><td><b>${s.total.toFixed(2)}</b></td></tr>`;
+            
+            s.items.forEach(i => {
+                if(!itemSum[i.name]) itemSum[i.name] = {q:0, f:0};
+                itemSum[i.name].q += i.qty; itemSum[i.name].f += i.free;
+            });
+        });
+        
+        html += `</table>`;
+        html += `<div class="card" style="margin-top:15px; background:#f0f9ff;">
+            <div class="item-row"><span>Total Collected:</span> <b>${totalColl.toFixed(2)}</b></div>
+            <div class="item-row"><span>Total Discounts:</span> <b>${totalDisc.toFixed(2)}</b></div>
+            <hr>
+            <div class="item-row"><span>Ishan Collection:</span> <b>${repSum.Ishan.toFixed(2)}</b></div>
+            <div class="item-row"><span>Rohan Collection:</span> <b>${repSum.Rohan.toFixed(2)}</b></div>
+        </div>`;
+
+        html += `<h3>STOCK MOVED</h3><table><tr><th>Item</th><th>Qty</th><th>Free</th></tr>`;
+        Object.keys(itemSum).forEach(k => {
+            html += `<tr><td>${k}</td><td>${itemSum[k].q}</td><td>${itemSum[k].f}</td></tr>`;
+        });
+        html += `</table>`;
+        
+        html += `<button class="btn-blue" style="margin-top:15px" onclick="printAdvancedSummary()">PRINT THIS SUMMARY</button>`;
+        document.getElementById('summary-report-container').innerHTML = html;
+    }
+
+    function printAdvancedSummary() {
+        const content = document.getElementById('summary-report-container').innerHTML;
+        // Clean out the button before printing
+        const cleanContent = content.replace(/<button.*<\/button>/, "");
+        openPrintOverlay(cleanContent);
+    }
+
+    // --- SETUP & REFRESH ---
     function addProItem() { const n=document.getElementById('adm-p-name'), p=document.getElementById('adm-p-price'), s=document.getElementById('adm-p-stock'), sc=document.getElementById('adm-p-scheme'); db.items.push({ name: n.value, price: parseFloat(p.value), stock: parseInt(s.value||0), scheme: parseInt(sc.value||0) }); sync(); }
     function addProRoute() { db.routes.push({ name: document.getElementById('adm-r-name').value, shops: [] }); sync(); }
     function addProShop() { db.routes[document.getElementById('adm-r-select').value].shops.push(document.getElementById('adm-s-name').value); sync(); }
