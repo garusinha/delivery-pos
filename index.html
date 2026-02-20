@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Agency POS Pro V8</title>
+    <style>
+      :root {
+        --primary: #1e293b;
+        --accent: #3b82f6;
+        --success: #10b981;
+        --danger: #f43f5e;
+        --bg: #f1f5f9;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        margin: 0;
+        background: var(--bg);
+        color: #334155;
+      }
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: 800;
+      }
+      nav {
+        display: flex;
+        background: white;
+        position: sticky;
+        top: 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+      }
+      .nav-link {
+        flex: 1;
+        padding: 12px 5px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border-bottom: 3px solid transparent;
+      }
+      .nav-link.active {
+        border-bottom: 3px solid var(--accent);
+        color: var(--accent);
+      }
+      .container {
+        padding: 12px;
+        max-width: 600px;
+        margin: auto;
+        padding-bottom: 100px;
+      }
+      .card {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 15px;
+        border: 1px solid #e2e8f0;
+      }
+      h3 {
+        margin-top: 0;
+        color: var(--primary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+      }
+      label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        color: #64748b;
+        text-transform: uppercase;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-blue {
+        background: var(--accent);
+        color: white;
+      }
+      .btn-green {
+        background: var(--success);
+        color: white;
+      }
+      .btn-gray {
+        background: #94a3b8;
+        color: white;
+      }
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+        margin-top: 10px;
+        background: white;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px;
+        border: 1px solid #eee;
+      }
+      .history-bill-card {
+        border-left: 4px solid var(--accent);
+        padding-left: 10px;
+        margin-bottom: 10px;
+        background: #f8fafc;
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>AGENCY POS V8 (HISTORY)</header>
+
+    <nav>
+      <div class="nav-link active" onclick="showView('pos')">BILLING</div>
+      <div class="nav-link" onclick="showView('stock')">STOCKS</div>
+      <div class="nav-link" onclick="showView('admin')">REPORTS</div>
+      <div class="nav-link" onclick="checkAdmin()">SETUP</div>
+    </nav>
+
+    <div class="container">
+      <div id="view-pos">
+        <div id="pos-route-list">
+          <h3>Select Route</h3>
+          <div id="routes-grid"></div>
+        </div>
+        <div id="pos-shop-list" style="display: none">
+          <button
+            class="btn-gray"
+            onclick="showView('pos')"
+            style="margin-bottom: 10px"
+          >
+            ← BACK
+          </button>
+          <div id="shops-grid"></div>
+        </div>
+        <div id="pos-billing" style="display: none">
+          <button
+            class="btn-gray"
+            onclick="backToShops()"
+            style="margin-bottom: 10px"
+          >
+            ← BACK
+          </button>
+          <h2 id="billing-shop-name"></h2>
+          <div class="card">
+            <label>Sales Rep</label
+            ><select id="bill-rep-select">
+              <option>Ishan</option>
+              <option>Rohan</option>
+            </select>
+          </div>
+          <div class="card">
+            <label>Product</label
+            ><select id="bill-item-select" onchange="calcFreeIssue()"></select>
+            <div style="display: flex; gap: 10px">
+              <div style="flex: 2">
+                <label>Qty</label
+                ><input
+                  type="number"
+                  id="bill-qty"
+                  value="1"
+                  oninput="calcFreeIssue()"
+                />
+              </div>
+              <div style="flex: 1">
+                <label>Free</label
+                ><input type="number" id="bill-free" value="0" />
+              </div>
+            </div>
+            <button class="btn-blue" onclick="addToCart()">
+              + ADD TO LIST
+            </button>
+          </div>
+          <div class="card">
+            <h3>Bill Preview</h3>
+            <div id="cart-content"></div>
+            <label>Discount</label
+            ><input
+              type="number"
+              id="bill-discount"
+              value="0"
+              oninput="updateBillTotals()"
+            />
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 1.4rem;
+                font-weight: 900;
+              "
+            >
+              <span>TOTAL:</span><span id="bill-net-total">0.00</span>
+            </div>
+            <button
+              class="btn-green"
+              style="margin-top: 15px"
+              onclick="finalizeAndPrint()"
+            >
+              FINALIZE & PRINT
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-stock" style="display: none">
+        <div class="card">
+          <h3>Truck Inventory</h3>
+          <div id="stock-list-container"></div>
+        </div>
+      </div>
+
+      <div id="view-admin" style="display: none">
+        <div class="card">
+          <h3>History & Summaries</h3>
+          <label>Select Date</label>
+          <input type="date" id="report-date-picker" onchange="runSummary()" />
+          <div id="summary-report"></div>
+        </div>
+      </div>
+
+      <div id="view-setup" style="display: none">
+        <div class="card">
+          <h3>System Setup</h3>
+          <input type="text" id="adm-p-name" placeholder="Item Name" />
+          <input type="number" id="adm-p-price" placeholder="Price" />
+          <input type="number" id="adm-p-stock" placeholder="Truck Stock" />
+          <input type="number" id="adm-p-scheme" placeholder="Scheme (12)" />
+          <button class="btn-green" onclick="addProItem()">SAVE PRODUCT</button>
+          <hr style="margin: 20px 0" />
+          <input type="text" id="adm-r-name" placeholder="Route Name" /><button
+            class="btn-blue"
+            onclick="addProRoute()"
+          >
+            SAVE ROUTE
+          </button>
+          <hr style="margin: 20px 0" />
+          <select id="adm-r-select"></select>
+          <input type="text" id="adm-s-name" placeholder="Shop Name" /><button
+            class="btn-blue"
+            onclick="addProShop()"
+          >
+            SAVE SHOP
+          </button>
+        </div>
+        <button
+          onclick="clearSystem()"
+          style="background: var(--danger); color: white"
+        >
+          RESET SYSTEM
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let db = JSON.parse(localStorage.getItem("pos_pro_v8")) || {
+        items: [],
+        routes: [],
+        sales: [],
+      };
+      let cart = [];
+      let activeShopName = "";
+
+      // Set default date to today for the report picker
+      document.getElementById("report-date-picker").valueAsDate = new Date();
+
+      function sync() {
+        localStorage.setItem("pos_pro_v8", JSON.stringify(db));
+        refreshAll();
+      }
+
+      function showView(id) {
+        ["view-pos", "view-stock", "view-admin", "view-setup"].forEach(
+          (v) => (document.getElementById(v).style.display = "none"),
+        );
+        document.getElementById("view-" + id).style.display = "block";
+        document
+          .querySelectorAll(".nav-link")
+          .forEach((l) => l.classList.remove("active"));
+        if (id === "pos") {
+          document.getElementById("pos-route-list").style.display = "block";
+          document.getElementById("pos-shop-list").style.display = "none";
+          document.getElementById("pos-billing").style.display = "none";
+        }
+        refreshAll();
+      }
+
+      function checkAdmin() {
+        if (prompt("Pass:") === "1234") showView("setup");
+      }
+
+      // --- SETUP LOGIC ---
+      function addProItem() {
+        const n = document.getElementById("adm-p-name"),
+          p = document.getElementById("adm-p-price"),
+          s = document.getElementById("adm-p-stock"),
+          sc = document.getElementById("adm-p-scheme");
+        db.items.push({
+          name: n.value,
+          price: parseFloat(p.value),
+          stock: parseInt(s.value || 0),
+          scheme: parseInt(sc.value || 0),
+        });
+        sync();
+        alert("Item Saved");
+        n.value = "";
+        p.value = "";
+        s.value = "";
+        sc.value = "";
+      }
+      function addProRoute() {
+        const r = document.getElementById("adm-r-name");
+        db.routes.push({ name: r.value, shops: [] });
+        sync();
+        r.value = "";
+      }
+      function addProShop() {
+        const ridx = document.getElementById("adm-r-select").value;
+        const sname = document.getElementById("adm-s-name");
+        db.routes[ridx].shops.push(sname.value);
+        sync();
+        sname.value = "";
+      }
+
+      // --- POS LOGIC ---
+      function openRoute(idx) {
+        document.getElementById("pos-route-list").style.display = "none";
+        document.getElementById("pos-shop-list").style.display = "block";
+        document.getElementById("shops-grid").innerHTML = db.routes[idx].shops
+          .map(
+            (s) =>
+              `<button class="btn-blue" style="margin-bottom:8px; background:white; color:black; border:1px solid #ddd" onclick="openBilling('${s}')">${s}</button>`,
+          )
+          .join("");
+      }
+      function openBilling(shop) {
+        activeShopName = shop;
+        cart = [];
+        document.getElementById("pos-shop-list").style.display = "none";
+        document.getElementById("pos-billing").style.display = "block";
+        document.getElementById("billing-shop-name").innerText = shop;
+        updateCartUI();
+      }
+      function backToShops() {
+        document.getElementById("pos-billing").style.display = "none";
+        document.getElementById("pos-shop-list").style.display = "block";
+      }
+      function calcFreeIssue() {
+        const iIdx = document.getElementById("bill-item-select").value;
+        const qty = parseInt(document.getElementById("bill-qty").value || 0);
+        if (iIdx === "") return;
+        const scheme = db.items[iIdx].scheme;
+        document.getElementById("bill-free").value =
+          scheme > 0 ? Math.floor(qty / scheme) : 0;
+      }
+      function addToCart() {
+        const sel = document.getElementById("bill-item-select");
+        const qty = document.getElementById("bill-qty");
+        const free = document.getElementById("bill-free");
+        if (sel.value === "" || parseInt(qty.value) <= 0) return;
+        cart.push({
+          ...db.items[sel.value],
+          qty: parseInt(qty.value),
+          free: parseInt(free.value),
+          itemIdx: sel.value,
+        });
+        sel.value = "";
+        qty.value = 1;
+        free.value = 0;
+        updateCartUI();
+      }
+      function updateCartUI() {
+        let subtotal = 0;
+        document.getElementById("cart-content").innerHTML = cart
+          .map((c) => {
+            subtotal += c.price * c.qty;
+            return `<div class="item-row"><span>${c.name} x${c.qty} (F:${c.free})</span> <span>${(c.price * c.qty).toFixed(2)}</span></div>`;
+          })
+          .join("");
+        updateBillTotals();
+      }
+      function updateBillTotals() {
+        const subtotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
+        const disc = parseFloat(
+          document.getElementById("bill-discount").value || 0,
+        );
+        document.getElementById("bill-net-total").innerText = (
+          subtotal - disc
+        ).toFixed(2);
+      }
+
+      // --- PRINTING HELPER ---
+      function printHelper(html) {
+        const w = window.open("", "", "height=600,width=800");
+        w.document.write(
+          "<html><head><style>body{font-family:monospace;padding:20px;} .flex{display:flex;justify-content:space-between;margin:5px 0;} .center{text-align:center;} table{width:100%;border-collapse:collapse;margin-top:10px;} th,td{border:1px solid black;padding:5px;text-align:left;}</style></head><body>",
+        );
+        w.document.write(html);
+        w.document.write("</body></html>");
+        w.document.close();
+        setTimeout(() => {
+          w.print();
+          w.close();
+        }, 300);
+      }
+
+      function finalizeAndPrint() {
+        if (!cart.length) return;
+        const rep = document.getElementById("bill-rep-select").value;
+        const disc = parseFloat(
+          document.getElementById("bill-discount").value || 0,
+        );
+        const net = document.getElementById("bill-net-total").innerText;
+        const dateStr = new Date().toISOString().split("T")[0]; // Format YYYY-MM-DD
+
+        let receiptHTML = `<div class="center"><h3>INVOICE</h3><h2>${activeShopName}</h2><p>REP: ${rep}<br>${new Date().toLocaleString()}</p></div><hr>`;
+        cart.forEach((c) => {
+          receiptHTML += `<div class="flex"><span>${c.name} x${c.qty} (F:${c.free})</span> <span>${(c.price * c.qty).toFixed(2)}</span></div>`;
+          db.items[c.itemIdx].stock -= c.qty + c.free;
+        });
+        receiptHTML += `<hr><div class="flex"><span>Discount:</span> <span>-${disc.toFixed(2)}</span></div><div class="flex"><strong>TOTAL:</strong> <strong>${net}</strong></div>`;
+
+        db.sales.push({
+          date: dateStr,
+          time: new Date().toLocaleTimeString(),
+          shop: activeShopName,
+          rep: rep,
+          disc: disc,
+          total: parseFloat(net),
+          items: [...cart],
+          html: receiptHTML,
+        });
+        printHelper(receiptHTML);
+        sync();
+        showView("pos");
+      }
+
+      // --- SUMMARY & HISTORY LOGIC ---
+      function runSummary() {
+        const selectedDate =
+          document.getElementById("report-date-picker").value;
+        const daySales = db.sales.filter((s) => s.date === selectedDate);
+
+        if (daySales.length === 0) {
+          document.getElementById("summary-report").innerHTML =
+            "<p style='text-align:center; padding:20px;'>No records found for this date.</p>";
+          return;
+        }
+
+        let totalDayRev = 0;
+        let repData = { Ishan: 0, Rohan: 0 };
+        let itemSum = {};
+
+        let html = `<h3>Individual Bills</h3>`;
+        daySales.forEach((s, idx) => {
+          totalDayRev += s.total;
+          repData[s.rep] += s.total;
+          s.items.forEach((i) => {
+            if (!itemSum[i.name]) itemSum[i.name] = { q: 0, f: 0 };
+            itemSum[i.name].q += i.qty;
+            itemSum[i.name].f += i.free;
+          });
+
+          html += `<div class="history-bill-card">
+                <div class="flex"><b>${s.shop}</b> <span>${s.time}</span></div>
+                <div class="flex"><span>By: ${s.rep}</span> <b>${s.total.toFixed(2)}</b></div>
+                <button class="btn-blue" style="padding:5px; font-size:0.7rem; margin-top:5px;" onclick="rePrintBill(${db.sales.indexOf(s)})">RE-PRINT THIS BILL</button>
+            </div>`;
+        });
+
+        let summaryTable = `<h3 style="margin-top:20px">Daily Totals</h3><table>
+            <tr><th>Type</th><th>Details</th></tr>
+            <tr><td>Total Sales</td><td><b>${totalDayRev.toFixed(2)}</b></td></tr>
+            <tr><td>Ishan</td><td>${repData.Ishan.toFixed(2)}</td></tr>
+            <tr><td>Rohan</td><td>${repData.Rohan.toFixed(2)}</td></tr>
+        </table>`;
+
+        let itemTable =
+          `<h3 style="margin-top:20px">Total Stock Sold</h3><table><tr><th>Item</th><th>Sold</th><th>Free</th></tr>` +
+          Object.keys(itemSum)
+            .map(
+              (k) =>
+                `<tr><td>${k}</td><td>${itemSum[k].q}</td><td>${itemSum[k].f}</td></tr>`,
+            )
+            .join("") +
+          `</table>`;
+
+        document.getElementById("summary-report").innerHTML =
+          html +
+          summaryTable +
+          itemTable +
+          `<button class="btn-green" style="margin-top:15px" onclick="printDailyReport()">PRINT FULL SUMMARY</button>`;
+      }
+
+      function rePrintBill(index) {
+        printHelper(db.sales[index].html);
+      }
+      function printDailyReport() {
+        printHelper(document.getElementById("summary-report").innerHTML);
+      }
+
+      function refreshAll() {
+        document.getElementById("routes-grid").innerHTML = db.routes
+          .map(
+            (r, i) =>
+              `<button class="btn-blue" style="margin-bottom:10px" onclick="openRoute(${i})">${r.name}</button>`,
+          )
+          .join("");
+        document.getElementById("adm-r-select").innerHTML = db.routes
+          .map((r, i) => `<option value="${i}">${r.name}</option>`)
+          .join("");
+        document.getElementById("bill-item-select").innerHTML =
+          `<option value="">-- Choose Item --</option>` +
+          db.items
+            .map((it, i) => `<option value="${i}">${it.name}</option>`)
+            .join("");
+        document.getElementById("stock-list-container").innerHTML = db.items
+          .map(
+            (it) =>
+              `<div class="item-row"><span>${it.name}</span><b>${it.stock}</b></div>`,
+          )
+          .join("");
+      }
+
+      function clearSystem() {
+        if (confirm("Erase all data?")) {
+          localStorage.clear();
+          location.reload();
+        }
+      }
+      refreshAll();
+    </script>
+  </body>
+</html>
