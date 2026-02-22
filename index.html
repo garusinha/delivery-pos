@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Agency POS Cloud V9</title>
+    <title>Agency POS Cloud V10</title>
     <style>
         :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --bg: #f8fafc; }
         body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: 800; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: 800; border-bottom: 4px solid var(--accent); }
         nav { display: flex; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
         .nav-link { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-size: 0.7rem; font-weight: 700; color: #64748b; }
         .nav-link.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
@@ -20,7 +20,7 @@
         .btn-green { background: var(--success); color: white; }
         .btn-dark { background: var(--primary); color: white; }
         .item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-        #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #print-overlay { display: none; position: fixed; inset: 0; background: white; z-index: 9999; padding: 20px; }
         iframe { position: absolute; width: 0; height: 0; visibility: hidden; }
     </style>
@@ -31,14 +31,16 @@
 
 <div id="login-screen">
     <div class="card" style="width: 100%; max-width: 350px;">
-        <h2 style="text-align:center">ENTER PIN</h2>
-        <input type="password" id="sys-pin" placeholder="Enter PIN" style="text-align:center; font-size: 2rem;">
-        <button class="btn-blue" onclick="checkPin()">UNLOCK SYSTEM</button>
+        <h2 style="text-align:center">POS CLOUD V10</h2>
+        <p style="text-align:center; font-size:0.8rem; color:gray;">System Protected</p>
+        <input type="password" id="sys-pin" placeholder="PIN" style="text-align:center; font-size: 2rem;">
+        <button class="btn-blue" onclick="checkPin()">UNLOCK</button>
+        <button onclick="location.reload(true)" style="background:none; color:#64748b; font-size:0.7rem; margin-top:20px;">Force Refresh System</button>
     </div>
 </div>
 
 <div id="app-content" style="display:none">
-    <header>AGENCY POS CLOUD</header>
+    <header>AGENCY POS PRO V10</header>
     <nav>
         <div class="nav-link active" onclick="showV('pos', this)">BILLING</div>
         <div class="nav-link" onclick="showV('stock', this)">STOCKS</div>
@@ -85,25 +87,25 @@
         </div>
 
         <div id="v-setup" style="display:none">
-            <div class="card" style="background: #fff4e5;">
-                <h3>☁️ CLOUD SYNC</h3>
+            <div class="card" style="background: #e0f2fe; border: 2px solid var(--accent);">
+                <h3>☁️ CLOUD DATA SYNC</h3>
                 <label>GitHub Token</label>
                 <input type="password" id="gh-token" placeholder="ghp_xxxxxxx">
-                <label>Gist ID (Leave empty first time)</label>
-                <input type="text" id="gh-gist" placeholder="Gist ID">
+                <label>Gist ID</label>
+                <input type="text" id="gh-gist" placeholder="Gist ID (Paste here for Laptop)">
                 <div style="display:flex; gap:10px">
-                    <button class="btn-dark" onclick="cloudAction('push')">PUSH TO CLOUD</button>
-                    <button class="btn-blue" onclick="cloudAction('pull')">PULL FROM CLOUD</button>
+                    <button class="btn-dark" onclick="cloudAction('push')">PUSH (Save Phone)</button>
+                    <button class="btn-blue" onclick="cloudAction('pull')">PULL (Get to Laptop)</button>
                 </div>
-                <p style="font-size:0.7rem">Push to save data online. Pull to download data to another device.</p>
             </div>
             <div class="card">
-                <h3>System Setup</h3>
+                <h3>Product & Route Setup</h3>
                 <input type="text" id="set-p-n" placeholder="Product Name"><input type="number" id="set-p-p" placeholder="Price">
                 <input type="number" id="set-p-s" placeholder="Truck Stock"><input type="number" id="set-p-sc" placeholder="Scheme (e.g. 12)">
                 <button class="btn-green" onclick="addItem()">SAVE PRODUCT</button>
                 <hr><input type="text" id="set-r-n" placeholder="Route Name"><button class="btn-blue" onclick="addRoute()">SAVE ROUTE</button>
                 <hr><select id="set-r-sel"></select><input type="text" id="set-s-n" placeholder="Shop Name"><button class="btn-blue" onclick="addShop()">SAVE SHOP</button>
+                <hr><button onclick="clearSystem()" style="background: #fda4af; color:#991b1b">RESET ALL LOCAL DATA</button>
             </div>
         </div>
     </div>
@@ -111,12 +113,15 @@
 
 <div id="print-overlay">
     <div id="print-data"></div>
-    <button class="btn-green" onclick="doPrint()">CONFIRM PRINT</button>
-    <button class="btn-dark" onclick="closePrint()">BACK</button>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn-green" onclick="doPrint()">PRINT NOW</button>
+        <button class="btn-dark" onclick="closePrint()">CLOSE</button>
+    </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('pos_v9')) || { items: [], routes: [], sales: [], settings: { pin: "1234", token: "", gist: "" } };
+    // System V10 Engine
+    let db = JSON.parse(localStorage.getItem('pos_v10')) || { items: [], routes: [], sales: [], settings: { pin: "1234", token: "", gist: "" } };
     let cart = []; let curS = "";
 
     function checkPin() {
@@ -124,19 +129,19 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             refresh();
-        } else { alert("Wrong PIN"); }
+        } else { alert("Incorrect PIN"); }
     }
 
-    function sync() { localStorage.setItem('pos_v9', JSON.stringify(db)); refresh(); }
+    function sync() { localStorage.setItem('pos_v10', JSON.stringify(db)); refresh(); }
 
     async function cloudAction(type) {
         const token = document.getElementById('gh-token').value;
         let gistId = document.getElementById('gh-gist').value;
-        if(!token) return alert("Need Token");
+        if(!token) return alert("Please enter GitHub Token");
         db.settings.token = token;
 
         const headers = { "Authorization": `token ${token}`, "Content-Type": "application/json" };
-        const body = JSON.stringify({ files: { "pos_db.json": { content: JSON.stringify(db) } } });
+        const body = JSON.stringify({ files: { "pos_v10_db.json": { content: JSON.stringify(db) } } });
 
         try {
             if(type === 'push') {
@@ -146,13 +151,13 @@
                 const data = await res.json();
                 db.settings.gist = data.id;
                 document.getElementById('gh-gist').value = data.id;
-                alert("Cloud Sync Successful!");
+                alert("PUSH SUCCESS: Saved to Cloud!");
             } else {
-                if(!gistId) return alert("Need Gist ID to Pull");
+                if(!gistId) return alert("Need Gist ID to Pull data");
                 const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers });
                 const data = await res.json();
-                db = JSON.parse(data.files["pos_db.json"].content);
-                alert("Data Downloaded!");
+                db = JSON.parse(data.files["pos_v10_db.json"].content);
+                alert("PULL SUCCESS: Laptop Updated!");
             }
             sync();
         } catch(e) { alert("Cloud Error: " + e); }
@@ -172,7 +177,6 @@
         }
     }
 
-    // POS LOGIC
     function openR(idx) {
         document.getElementById('route-sel').style.display = 'none';
         document.getElementById('shop-sel').style.display = 'block';
@@ -198,9 +202,9 @@
     function saveBill() {
         if(!cart.length) return;
         const total = document.getElementById('bill-total').innerText;
-        const html = `<div style="font-family:monospace; text-align:center;"><h2>INVOICE</h2><h3>${curS}</h3><hr>` + 
+        const html = `<div style="font-family:monospace; text-align:center; color:black;"><h2>INVOICE</h2><h3>${curS}</h3><p>${new Date().toLocaleString()}</p><hr>` + 
             cart.map(c => `<div style="display:flex; justify-content:space-between"><span>${c.name} x${c.qty}</span><span>${(c.price*c.qty).toFixed(2)}</span></div>`).join('') + 
-            `<hr><b>TOTAL: ${total}</b></div>`;
+            `<hr><b>TOTAL: ${total}</b><p>Thank You!</p></div>`;
         
         cart.forEach(c => db.items[c.idx].stock -= (c.qty + c.free));
         db.sales.push({ date: new Date().toISOString().split('T')[0], shop: curS, total: parseFloat(total), disc: parseFloat(document.getElementById('i-disc').value), html });
@@ -212,7 +216,7 @@
     function doPrint() {
         const frame = document.getElementById('print-frame');
         const doc = frame.contentWindow.document;
-        doc.open(); doc.write('<html><body>' + document.getElementById('print-data').innerHTML + '</body></html>'); doc.close();
+        doc.open(); doc.write('<html><body style="font-family:monospace;">' + document.getElementById('print-data').innerHTML + '</body></html>'); doc.close();
         setTimeout(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }, 500);
     }
     function closePrint() { document.getElementById('print-overlay').style.display = 'none'; showV('pos'); }
@@ -220,7 +224,7 @@
     function runRep() {
         const d = document.getElementById('rep-date').value;
         const sales = db.sales.filter(s => s.date === d);
-        document.getElementById('rep-res').innerHTML = `<h3>Total: ${sales.reduce((s,x)=>s+x.total,0).toFixed(2)}</h3>` + 
+        document.getElementById('rep-res').innerHTML = `<h3>Day Total: ${sales.reduce((s,x)=>s+x.total,0).toFixed(2)}</h3>` + 
             sales.map(s => `<div class="item-row"><b>${s.shop}</b> <span>${s.total.toFixed(2)}</span></div>`).join('');
     }
 
@@ -237,7 +241,7 @@
         document.getElementById('gh-gist').value = db.settings.gist || "";
     }
 
-    function clearSystem() { if(confirm("DELETE EVERYTHING?")) { localStorage.clear(); location.reload(); } }
+    function clearSystem() { if(confirm("This will erase all items/shops from this device. Proceed?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
