@@ -1,287 +1,1104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gamirasa ERP V14.3 - Full Settlement</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Gamirasa ERP V17.0 - Enterprise Edition</title>
     <style>
-        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --bg: #f1f5f9; }
-        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); color: #1e293b; }
-        header { background: var(--primary); color: white; padding: 12px; text-align: center; border-bottom: 4px solid var(--accent); }
-        .sync-status { background: #1e293b; color: #94a3b8; font-size: 0.6rem; text-align: center; padding: 4px; }
-        nav { display: flex; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
-        .nav-link { flex: 1; padding: 14px 5px; text-align: center; cursor: pointer; font-size: 0.65rem; font-weight: 700; color: #64748b; min-width: 75px; text-transform: uppercase; }
-        .nav-link.active { color: var(--accent); border-bottom: 3px solid var(--accent); background: #f8fafc; }
-        .container { padding: 15px; max-width: 800px; margin: auto; padding-bottom: 100px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
-        .btn-blue { background: var(--accent); color: white; }
-        .btn-green { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-dark { background: var(--primary); color: white; }
-        .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; padding: 15px; overflow-y: auto; }
-        .modal { background: white; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; color: #333; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px solid #eee; }
-        @media print { .no-print { display: none; } body { background: white; } .card { border: none; box-shadow: none; } }
+      :root {
+        --primary: #0f172a;
+        --accent: #2563eb;
+        --success: #059669;
+        --danger: #dc2626;
+        --warning: #d97706;
+        --bg: #f8fafc;
+      }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        margin: 0;
+        background: var(--bg);
+        color: #1e293b;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Navigation & Header */
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 16px;
+        text-align: center;
+        font-weight: 800;
+        letter-spacing: 1px;
+        border-bottom: 4px solid var(--accent);
+      }
+      .sync-bar {
+        background: #1e293b;
+        color: #94a3b8;
+        font-size: 0.7rem;
+        text-align: center;
+        padding: 6px;
+        border-bottom: 1px solid #334155;
+      }
+      nav {
+        display: flex;
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        overflow-x: auto;
+      }
+      .nav-link {
+        flex: 1;
+        padding: 15px 10px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        min-width: 90px;
+        text-transform: uppercase;
+        border-bottom: 3px solid transparent;
+      }
+      .nav-link.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        background: #f1f5f9;
+      }
+
+      /* Layout */
+      .container {
+        padding: 15px;
+        max-width: 1000px;
+        margin: auto;
+        padding-bottom: 100px;
+      }
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #475569;
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      /* Buttons */
+      button {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-transform: uppercase;
+      }
+      .btn-blue {
+        background: var(--accent);
+        color: white;
+      }
+      .btn-green {
+        background: var(--success);
+        color: white;
+      }
+      .btn-dark {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-ghost {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+      }
+      button:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+      }
+
+      /* Tables & Lists */
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        align-items: center;
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .stat-card {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+      }
+      .stat-val {
+        display: block;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .stat-label {
+        font-size: 0.65rem;
+        color: #64748b;
+        text-transform: uppercase;
+      }
+
+      /* Modals */
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        padding: 15px;
+        overflow-y: auto;
+      }
+      .modal {
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        max-width: 600px;
+        margin: auto;
+        position: relative;
+      }
+
+      /* Print Utilities */
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        .print-only {
+          display: block !important;
+        }
+        .card {
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        body {
+          background: white;
+        }
+      }
+      .print-only {
+        display: none;
+      }
+      .badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 800;
+      }
+      .badge-free {
+        background: #fef3c7;
+        color: #92400e;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="sync-bar no-print" id="sync-status">SYSTEM INITIALIZING...</div>
 
-<div class="sync-status no-print" id="sync-info">System Online</div>
-
-<div id="login-screen" class="no-print" style="position:fixed; inset:0; background:var(--primary); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-    <h2 style="color:white;">GAMIRASA ERP V14.3</h2>
-    <div class="card" style="width:280px; text-align:center;">
-        <input type="password" id="sys-pin" placeholder="PIN" style="text-align:center;">
-        <button class="btn-blue" onclick="checkPin()">LOG IN</button>
+    <div
+      id="login-screen"
+      class="no-print"
+      style="
+        position: fixed;
+        inset: 0;
+        background: var(--primary);
+        z-index: 10001;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      "
+    >
+      <h1 style="color: white; margin-bottom: 10px">GAMIRASA TITAN V17</h1>
+      <p style="color: #94a3b8; margin-bottom: 30px">
+        Professional Enterprise Resource Planning
+      </p>
+      <div class="card" style="width: 100%; max-width: 350px">
+        <div class="form-group">
+          <label>OPERATING REPRESENTATIVE</label>
+          <select id="user-rep" style="font-weight: 800">
+            <option value="Rep A">REP - ALPHA (A)</option>
+            <option value="Rep B">REP - BRAVO (B)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>SECURITY PIN</label>
+          <input
+            type="password"
+            id="sys-pin"
+            placeholder="••••"
+            style="text-align: center; font-size: 1.5rem; letter-spacing: 8px"
+          />
+        </div>
+        <button class="btn-blue" onclick="checkPin()">UNLOCK SYSTEM</button>
+      </div>
     </div>
-</div>
 
-<div id="app-content" style="display:none">
-    <header class="no-print">GAMIRASA DISTRIBUTION</header>
-    <nav class="no-print">
+    <div id="app-content" style="display: none">
+      <header class="no-print">
+        <span id="display-rep"></span> | <span id="display-date"></span>
+      </header>
+
+      <nav class="no-print">
         <div class="nav-link active" onclick="showV('order', this)">Orders</div>
         <div class="nav-link" onclick="showV('delivery', this)">Delivery</div>
         <div class="nav-link" onclick="showV('credit', this)">Credits</div>
+        <div class="nav-link" onclick="showV('stock', this)">Stocks</div>
         <div class="nav-link" onclick="showV('summary', this)">Summary</div>
-        <div class="nav-link" onclick="showV('setup', this)">Setup</div>
-    </nav>
+        <div class="nav-link" onclick="showV('setup', this)">Admin</div>
+      </nav>
 
-    <div class="container">
+      <div class="container">
         <div id="v-order">
-            <div id="route-list"></div>
-            <div id="shop-list" style="display:none"></div>
-            <div id="order-ui" style="display:none">
-                <button onclick="showV('order')" class="btn-dark" style="width:auto; margin-bottom:10px;">← BACK</button>
-                <div class="card">
-                    <h2 id="cur-shop" style="margin:0 0 10px 0;"></h2>
-                    <select id="i-item" onchange="autoScheme()"></select>
-                    <div style="display:flex; gap:10px">
-                        <input type="number" id="i-qty" value="1" oninput="autoScheme()" placeholder="Qty">
-                        <input type="number" id="i-free" value="0" placeholder="Free">
-                    </div>
-                    <button class="btn-blue" onclick="addToOrder()">+ ADD TO LIST</button>
+          <div id="route-selector"></div>
+          <div id="shop-selector" style="display: none"></div>
+
+          <div id="order-cart-ui" style="display: none">
+            <button
+              class="btn-ghost no-print"
+              onclick="showV('order')"
+              style="margin-bottom: 15px; width: auto"
+            >
+              ← BACK TO SHOPS
+            </button>
+            <div class="card no-print">
+              <h2
+                id="order-shop-name"
+                style="margin: 0; color: var(--accent)"
+              ></h2>
+              <hr
+                style="margin: 15px 0; border: 0; border-top: 1px solid #eee"
+              />
+
+              <div class="form-group">
+                <label>SMART SEARCH PRODUCT</label>
+                <input
+                  type="text"
+                  id="item-search"
+                  placeholder="Type first letters..."
+                  oninput="smartSearch()"
+                />
+                <select id="item-select" style="margin-top: 10px"></select>
+              </div>
+
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+              >
+                <div class="form-group">
+                  <label>BILLING QTY</label>
+                  <input type="number" id="order-qty" value="1" />
                 </div>
-                <div class="card">
-                    <div id="order-cart-list"></div>
-                    <h3 style="text-align:right;">Total: Rs. <span id="order-total">0.00</span></h3>
-                    <button class="btn-green" onclick="savePreOrder()">SAVE PRE-ORDER</button>
+                <div class="form-group">
+                  <label>FREE ISSUE QTY</label>
+                  <input type="number" id="order-free" value="0" />
                 </div>
+              </div>
+              <button class="btn-blue" onclick="addToCart()">
+                + ADD ITEM TO INVOICE
+              </button>
             </div>
-        </div>
 
-        <div id="v-delivery" style="display:none">
-            <div id="delivery-pending-list"></div>
-        </div>
-
-        <div id="v-credit" style="display:none">
-            <div class="card" style="background:var(--primary); color:white; text-align:center;">
-                Outstanding: <h2 id="grand-credit">Rs. 0.00</h2>
-            </div>
-            <div id="credit-list-ui"></div>
-        </div>
-
-        <div id="v-summary" style="display:none">
-            <button class="btn-blue no-print" onclick="window.print()" style="margin-bottom:15px;">🖨️ PRINT SUMMARY REPORT</button>
             <div class="card">
-                <center>
-                    <h2 style="margin:0;">GAMIRASA FOOD PRODUCT</h2>
-                    <p id="sum-date" style="margin:5px 0; font-weight:bold;"></p>
-                </center>
-                <hr>
-                <h4 style="margin-bottom:5px;">TRUCK STOCK RETURN (End Balance)</h4>
-                <div class="grid-3" style="font-weight:bold; background:#f1f5f9;">
-                    <span>Item</span><span>Loaded</span><span>Return</span>
-                </div>
-                <div id="sum-stock"></div>
-                
-                <h4 style="margin:15px 0 5px 0;">CASH COLLECTIONS</h4>
-                <div id="sum-cash"></div>
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; padding-top:10px; border-top:2px solid #333;">
-                    <span>TOTAL CASH IN HAND:</span>
-                    <span id="sum-total-cash">0.00</span>
-                </div>
-
-                <h4 style="margin:15px 0 5px 0;">CREDIT SUMMARY</h4>
-                <div id="sum-new-credit"></div>
+              <div id="cart-items-list"></div>
+              <div
+                style="
+                  text-align: right;
+                  margin-top: 15px;
+                  padding-top: 15px;
+                  border-top: 2px solid #f1f5f9;
+                "
+              >
+                <span style="color: #64748b; font-weight: bold">Subtotal:</span>
+                <h2 style="margin: 0">Rs. <span id="cart-total">0.00</span></h2>
+              </div>
+              <button
+                class="btn-green no-print"
+                style="margin-top: 20px"
+                onclick="finalizePreOrder()"
+              >
+                CONFIRM PRE-ORDER
+              </button>
             </div>
+          </div>
         </div>
 
-        <div id="v-setup" style="display:none">
-            <div class="card">
-                <button class="btn-dark" onclick="cloudAction('pull')">🔄 FORCE CLOUD SYNC</button>
-            </div>
-            <div class="card">
-                <h3>Add Product</h3>
-                <input type="text" id="set-p-n" placeholder="Product Name">
-                <input type="number" id="set-p-p" placeholder="Price">
-                <input type="number" id="set-p-sc" placeholder="Scheme">
-                <button class="btn-green" onclick="addItem()">SAVE</button>
-                <hr>
-                <input type="text" id="set-r-n" placeholder="Route Name"><button class="btn-blue" onclick="addRoute()">SAVE ROUTE</button>
-                <hr>
-                <input type="text" id="set-s-n" placeholder="Shop Name"><button class="btn-blue" onclick="addShop()">SAVE SHOP</button>
-            </div>
+        <div id="v-delivery" style="display: none">
+          <h3>Pending Deliveries</h3>
+          <div id="pending-delivery-list"></div>
         </div>
+
+        <div id="v-credit" style="display: none">
+          <button
+            class="btn-dark no-print"
+            onclick="window.print()"
+            style="margin-bottom: 15px"
+          >
+            📥 DOWNLOAD CREDIT PDF
+          </button>
+          <div class="card">
+            <div class="print-only" style="text-align: center">
+              <h2>GAMIRASA FOODS - CREDIT REPORT</h2>
+              <p id="credit-print-date"></p>
+              <hr />
+            </div>
+            <div id="credit-data-list"></div>
+            <div
+              style="
+                margin-top: 20px;
+                text-align: right;
+                border-top: 2px solid #eee;
+                padding-top: 15px;
+              "
+            >
+              <span style="font-weight: bold">GRAND TOTAL OUTSTANDING:</span>
+              <h2 style="color: var(--danger); margin: 0">
+                Rs. <span id="credit-grand-total">0.00</span>
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div id="v-stock" style="display: none">
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <h3>Warehouse Inventory</h3>
+              <button
+                class="btn-ghost"
+                style="width: auto; padding: 5px 15px"
+                onclick="window.print()"
+              >
+                PRINT
+              </button>
+            </div>
+            <div id="inventory-list"></div>
+          </div>
+        </div>
+
+        <div id="v-summary" style="display: none">
+          <div class="card no-print">
+            <h3>Financial Filters</h3>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+            >
+              <select id="sum-rep">
+                <option value="All">All Reps</option>
+                <option value="Rep A">Rep A</option>
+                <option value="Rep B">Rep B</option>
+              </select>
+              <input type="date" id="sum-date" />
+            </div>
+            <button
+              class="btn-dark"
+              style="margin-top: 15px"
+              onclick="generateSummary()"
+            >
+              GENERATE REPORT
+            </button>
+          </div>
+
+          <div class="card" id="summary-report-print">
+            <div class="print-only" style="text-align: center">
+              <h2>GAMIRASA - PERFORMANCE SUMMARY</h2>
+              <p id="sum-meta-print"></p>
+              <hr />
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat-card">
+                <span class="stat-label">Gross Sales</span
+                ><span id="sum-gross" class="stat-val">0.00</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">9% Profit</span
+                ><span
+                  id="sum-profit"
+                  class="stat-val"
+                  style="color: var(--success)"
+                  >0.00</span
+                >
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Free Issues</span
+                ><span id="sum-free-count" class="stat-val">0</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Discount Val</span
+                ><span id="sum-disc" class="stat-val">0.00</span>
+              </div>
+            </div>
+
+            <h4 style="margin-top: 25px">Daily Delivered Logs</h4>
+            <div id="summary-log-details"></div>
+          </div>
+          <button class="btn-blue no-print" onclick="window.print()">
+            📥 SAVE SUMMARY AS PDF
+          </button>
+        </div>
+
+        <div id="v-setup" style="display: none">
+          <div class="card">
+            <h3>Admin Synchronization</h3>
+            <button class="btn-dark" onclick="cloudAction('pull')">
+              🔄 PULL CLOUD DATA
+            </button>
+          </div>
+
+          <div class="card">
+            <h3>1. Stock Management (Auto-Merge)</h3>
+            <input
+              type="text"
+              id="adm-p-name"
+              placeholder="Item Name + Weight"
+              list="product-suggestions"
+            />
+            <input type="number" id="adm-p-price" placeholder="Unit Price" />
+            <input
+              type="number"
+              id="adm-p-qty"
+              placeholder="Add Stock Quantity"
+            />
+            <button
+              class="btn-green"
+              style="margin-top: 10px"
+              onclick="adminSaveProduct()"
+            >
+              UPDATE INVENTORY
+            </button>
+          </div>
+
+          <div class="card">
+            <h3>2. Route & Shop Setup</h3>
+            <input type="text" id="adm-r-name" placeholder="New Route Name" />
+            <button class="btn-blue" onclick="adminSaveRoute()">
+              ADD ROUTE
+            </button>
+            <hr style="margin: 20px 0" />
+            <select id="adm-r-select"></select>
+            <input type="text" id="adm-s-name" placeholder="New Shop Name" />
+            <button class="btn-blue" onclick="adminSaveShop()">ADD SHOP</button>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
 
-<div id="edit-overlay" class="overlay">
-    <div class="modal">
-        <h2 id="edit-title" style="margin-top:0;"></h2>
-        <div id="edit-items-area"></div>
-        <div class="card" style="background:#fff1f2; margin-top:10px;">
-            <label><b>Returns (Rs.)</b></label>
-            <input type="number" id="return-value" value="0" oninput="calcFinal()">
+    <div id="bill-overlay" class="overlay">
+      <div class="modal" id="printable-invoice">
+        <div
+          style="
+            text-align: center;
+            border-bottom: 2px dashed #000;
+            padding-bottom: 10px;
+          "
+        >
+          <h2 style="margin: 0">GAMIRASA FOODS</h2>
+          <p style="font-size: 0.7rem; margin: 5px 0">Quality Spice Products</p>
+          <div
+            id="bill-header-data"
+            style="font-size: 0.7rem; font-weight: 700"
+          ></div>
         </div>
-        <div style="font-size:1.1rem; font-weight:bold;">Total Bill: Rs. <span id="edit-total">0.00</span></div>
-        <hr>
-        <label><b>Cash Received (Rs.)</b></label>
-        <input type="number" id="cash-paid" value="0">
-        <p style="font-size:0.75rem; color:var(--danger);" id="pay-warn"></p>
-        
-        <button class="btn-green" onclick="processPayment()">CONFIRM DELIVERY</button>
-        <button class="btn-danger" style="margin-top:8px;" onclick="cancelDelivery()">SHOP CLOSED</button>
-        <button onclick="closeModal()" style="margin-top:8px; background:#ddd;">CLOSE</button>
+
+        <h4
+          id="bill-shop"
+          style="margin: 15px 0 5px 0; color: var(--accent)"
+        ></h4>
+        <div id="bill-items-area"></div>
+
+        <div
+          class="no-print"
+          style="
+            margin-top: 15px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+          "
+        >
+          <label>Discount/Return Value (Rs.)</label>
+          <input
+            type="number"
+            id="bill-discount"
+            value="0"
+            oninput="calculateBill()"
+          />
+        </div>
+
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+          "
+        >
+          <span style="font-weight: 800">TOTAL PAYABLE:</span>
+          <h3 style="margin: 0">Rs. <span id="bill-total-pay">0.00</span></h3>
+        </div>
+
+        <div
+          id="bill-payment-status"
+          style="
+            margin-top: 10px;
+            font-weight: 800;
+            text-align: center;
+            text-transform: uppercase;
+          "
+        ></div>
+
+        <div
+          class="no-print"
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+          "
+        >
+          <button class="btn-green" onclick="completeSale('cash')">
+            CASH SALE
+          </button>
+          <button class="btn-dark" onclick="completeSale('credit')">
+            CREDIT SALE
+          </button>
+        </div>
+
+        <button
+          class="btn-blue no-print"
+          style="margin-top: 10px"
+          onclick="window.print()"
+        >
+          🖨️ PRINT BILL
+        </button>
+        <button
+          class="btn-ghost no-print"
+          style="margin-top: 10px"
+          onclick="closeBill()"
+        >
+          CLOSE
+        </button>
+      </div>
     </div>
-</div>
 
-<script>
-    const CLOUD_TOKEN = "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";
-    const CLOUD_GIST = "0c3f0cb67d4be33a00862eb3b31e9ecf";
-    let db = JSON.parse(localStorage.getItem('pos_v14_3')) || { items: [], routes: [], sales: [], nextBill: 1, settings: { pin: "1234", setupPin: "2705" } };
-    let cart = []; let curS = ""; let editingOrder = null;
+    <datalist id="product-suggestions">
+      <option value="Chili Powder 50g"></option>
+      <option value="Chili Powder 100g"></option>
+      <option value="Chili Powder 500g"></option>
+      <option value="Curry Powder 50g"></option>
+      <option value="Meat C/Powder 50g"></option>
+      <option value="Pepper Powder 50g"></option>
+      <option value="Tumeric Powder 50g"></option>
+      <option value="Noodles 400g"></option>
+      <option value="Papadam 60g"></option>
+    </datalist>
 
-    function checkPin() {
-        if(document.getElementById('sys-pin').value === db.settings.pin) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            cloudAction('pull');
-        } else { alert("Access Denied"); }
-    }
+    <script>
+      // --- CLOUD CONFIG ---
+      const CLOUD_TOKEN = "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";
+      const CLOUD_GIST = "0c3f0cb67d4be33a00862eb3b31e9ecf";
 
-    async function cloudAction(type) {
-        document.getElementById('sync-info').innerText = "Syncing...";
-        const headers = { "Authorization": `token ${CLOUD_TOKEN}`, "Content-Type": "application/json" };
+      // --- DATABASE INITIALIZATION ---
+      let db = JSON.parse(localStorage.getItem("gamirasa_v17_db")) || {
+        items: [],
+        routes: [],
+        sales: [],
+        config: { nextBill: 10001, pin: "1234", adminPin: "2705" },
+      };
+
+      let activeRep = "";
+      let currentCart = [];
+      let activeShop = "";
+      let activeSaleObj = null;
+
+      // --- SECURITY ---
+      function checkPin() {
+        const pin = document.getElementById("sys-pin").value;
+        if (pin === db.config.pin) {
+          activeRep = document.getElementById("user-rep").value;
+          document.getElementById("login-screen").style.display = "none";
+          document.getElementById("app-content").style.display = "block";
+          document.getElementById("display-rep").innerText = activeRep;
+          document.getElementById("display-date").innerText =
+            new Date().toLocaleDateString();
+          cloudAction("pull");
+        } else {
+          alert("INVALID SECURITY PIN");
+        }
+      }
+
+      // --- CLOUD SYNC ---
+      async function cloudAction(mode) {
+        document.getElementById("sync-status").innerText =
+          "☁️ CONNECTING TO CLOUD...";
         try {
-            if(type === 'push') {
-                await fetch(`https://api.github.com/gists/${CLOUD_GIST}`, { method: "PATCH", headers, body: JSON.stringify({ files: { "gamirasa_erp.json": { content: JSON.stringify(db) } } }) });
-            } else {
-                const res = await fetch(`https://api.github.com/gists/${CLOUD_GIST}`, { headers });
-                const data = await res.json();
-                if(data.files["gamirasa_erp.json"]) { db = JSON.parse(data.files["gamirasa_erp.json"].content); localStorage.setItem('pos_v14_3', JSON.stringify(db)); }
-            }
-            document.getElementById('sync-info').innerText = "✅ Cloud Synced: " + new Date().toLocaleTimeString();
-            refresh();
-        } catch(e) { document.getElementById('sync-info').innerText = "⚠️ Offline"; }
-    }
-
-    function sync() { localStorage.setItem('pos_v14_3', JSON.stringify(db)); cloudAction('push'); refresh(); }
-
-    function showV(id, el) {
-        if(id === 'setup' && prompt("PIN:") !== db.settings.setupPin) return;
-        ['v-order', 'v-delivery', 'v-credit', 'v-summary', 'v-setup'].forEach(v => document.getElementById(v).style.display = 'none');
-        document.getElementById('v-' + id).style.display = 'block';
-        if(el) { document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
-        if(id === 'order') resetOrder(); if(id === 'delivery') renderDelivery(); if(id === 'credit') renderCredit(); if(id === 'summary') renderSummary();
-    }
-
-    // --- SETUP ---
-    function addItem() { const n=document.getElementById('set-p-n'), p=document.getElementById('set-p-p'), sc=document.getElementById('set-p-sc'); db.items.push({ name: n.value, price: parseFloat(p.value), scheme: parseInt(sc.value)||0 }); n.value=""; p.value=""; sc.value=""; sync(); }
-    function addRoute() { const r=document.getElementById('set-r-n'); db.routes.push({ name: r.value, shops: [] }); r.value=""; sync(); }
-    function addShop() { const s=document.getElementById('set-s-n'); db.routes[0].shops.push(s.value); s.value=""; sync(); }
-
-    // --- ORDER ---
-    function resetOrder() { document.getElementById('route-list').style.display = 'block'; document.getElementById('shop-list').style.display = 'none'; document.getElementById('order-ui').style.display = 'none'; }
-    function openRoute(idx) {
-        document.getElementById('route-list').style.display = 'none'; document.getElementById('shop-list').style.display = 'block';
-        let h = `<h3>${db.routes[idx].name}</h3>` + db.routes[idx].shops.map(s => `<button class="card" onclick="startOrder('${s}')">${s}</button>`).join('');
-        document.getElementById('shop-list').innerHTML = h;
-    }
-    function startOrder(shop) { curS = shop; cart = []; document.getElementById('shop-list').style.display = 'none'; document.getElementById('order-ui').style.display = 'block'; document.getElementById('cur-shop').innerText = shop; upCart(); }
-    function autoScheme() { const it = db.items[document.getElementById('i-item').value]; if(it && it.scheme > 0) document.getElementById('i-free').value = Math.floor(document.getElementById('i-qty').value / it.scheme); }
-    function addToOrder() { const idx = document.getElementById('i-item').value; cart.push({...db.items[idx], qty: parseInt(document.getElementById('i-qty').value), free: parseInt(document.getElementById('i-free').value)}); document.getElementById('i-item').value = ""; document.getElementById('i-qty').value = "1"; document.getElementById('i-free').value = "0"; upCart(); }
-    function upCart() { let t = 0; document.getElementById('order-cart-list').innerHTML = cart.map(c => { t += (c.price*c.qty); return `<div class="item-row"><span>${c.name} x${c.qty}</span><b>${(c.price*c.qty).toFixed(2)}</b></div>` }).join(''); document.getElementById('order-total').innerText = t.toFixed(2); }
-    function savePreOrder() { db.sales.push({ id: Date.now(), billNo: "B"+db.nextBill++, shop: curS, items: [...cart], total: parseFloat(document.getElementById('order-total').innerText), status: 'pending', date: new Date().toLocaleDateString() }); sync(); showV('order'); }
-
-    // --- DELIVERY ---
-    function renderDelivery() {
-        const pending = db.sales.filter(s => s.status === 'pending');
-        document.getElementById('delivery-pending-list').innerHTML = pending.map(s => `<div class="card"><b>${s.shop}</b> (Rs.${s.total.toFixed(2)}) <button class="btn-blue btn-sm" onclick="openPayModal(${s.id})">PROCESS</button></div>`).join('');
-    }
-    function openPayModal(id) {
-        editingOrder = db.sales.find(x => x.id === id);
-        document.getElementById('edit-title').innerText = editingOrder.shop;
-        document.getElementById('cash-paid').value = editingOrder.total;
-        document.getElementById('return-value').value = 0;
-        calcFinal();
-        document.getElementById('edit-overlay').style.display = 'block';
-    }
-    function calcFinal() {
-        let t = 0; editingOrder.items.forEach(it => t += (it.price * it.qty));
-        t -= (parseFloat(document.getElementById('return-value').value) || 0);
-        editingOrder.total = t;
-        document.getElementById('edit-total').innerText = t.toFixed(2);
-    }
-    function processPayment() {
-        const paid = parseFloat(document.getElementById('cash-paid').value) || 0;
-        editingOrder.paid = paid;
-        editingOrder.status = 'delivered';
-        closeModal(); sync();
-    }
-    function cancelDelivery() { editingOrder.status = 'cancelled'; closeModal(); sync(); }
-    function closeModal() { document.getElementById('edit-overlay').style.display = 'none'; renderDelivery(); }
-
-    // --- SUMMARY & RETURNS ---
-    function renderSummary() {
-        const today = new Date().toLocaleDateString();
-        document.getElementById('sum-date').innerText = today;
-        const stockSum = {}, cashList = [], creditList = [];
-        let totalCash = 0;
-
-        db.sales.filter(s => s.date === today).forEach(s => {
-            s.items.forEach(it => { 
-                if(!stockSum[it.name]) stockSum[it.name] = {loaded: 0, sold: 0};
-                stockSum[it.name].loaded += (it.qty + it.free);
-                if(s.status === 'delivered') stockSum[it.name].sold += (it.qty + it.free);
+          const headers = {
+            Authorization: `token ${CLOUD_TOKEN}`,
+            "Content-Type": "application/json",
+          };
+          if (mode === "push") {
+            await fetch(`https://api.github.com/gists/${CLOUD_GIST}`, {
+              method: "PATCH",
+              headers,
+              body: JSON.stringify({
+                files: { "gamirasa_erp.json": { content: JSON.stringify(db) } },
+              }),
             });
-            if(s.status === 'delivered') {
-                if(s.paid > 0) { cashList.push(`${s.shop}: Rs.${s.paid.toFixed(2)}`); totalCash += s.paid; }
-                if(s.paid < s.total) creditList.push(`${s.shop}: Rs.${(s.total - s.paid).toFixed(2)} (Bal)`);
+          } else {
+            const res = await fetch(
+              `https://api.github.com/gists/${CLOUD_GIST}`,
+              { headers },
+            );
+            const data = await res.json();
+            if (data.files["gamirasa_erp.json"]) {
+              db = JSON.parse(data.files["gamirasa_erp.json"].content);
+              localStorage.setItem("gamirasa_v17_db", JSON.stringify(db));
             }
+          }
+          document.getElementById("sync-status").innerText =
+            "✅ CLOUD SYNCED: " + new Date().toLocaleTimeString();
+          refreshUI();
+        } catch (e) {
+          document.getElementById("sync-status").innerText = "⚠️ OFFLINE MODE";
+        }
+      }
+
+      function triggerSync() {
+        localStorage.setItem("gamirasa_v17_db", JSON.stringify(db));
+        cloudAction("push");
+        refreshUI();
+      }
+
+      // --- VIEW MANAGEMENT ---
+      function showV(id, el) {
+        if (id === "setup" && prompt("ADMIN AUTH:") !== db.config.adminPin)
+          return;
+
+        [
+          "v-order",
+          "v-delivery",
+          "v-credit",
+          "v-stock",
+          "v-summary",
+          "v-setup",
+        ].forEach((v) => {
+          document.getElementById(v).style.display = "none";
+        });
+        document.getElementById("v-" + id).style.display = "block";
+
+        if (el) {
+          document
+            .querySelectorAll(".nav-link")
+            .forEach((l) => l.classList.remove("active"));
+          el.classList.add("active");
+        }
+
+        if (id === "order") renderRoutes();
+        if (id === "delivery") renderDeliveryList();
+        if (id === "credit") renderCreditList();
+        if (id === "stock") renderInventory();
+        if (id === "summary") {
+          document.getElementById("sum-date").value = new Date()
+            .toISOString()
+            .split("T")[0];
+          generateSummary();
+        }
+      }
+
+      // --- ADMIN LOGIC ---
+      function adminSaveProduct() {
+        const name = document.getElementById("adm-p-name").value.trim();
+        const price = parseFloat(document.getElementById("adm-p-price").value);
+        const qty = parseInt(document.getElementById("adm-p-qty").value) || 0;
+
+        if (!name || isNaN(price)) return;
+
+        let existing = db.items.find(
+          (i) => i.name === name && i.price === price,
+        );
+        if (existing) {
+          existing.stock += qty;
+        } else {
+          db.items.push({ name, price, stock: qty });
+          db.items.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        document.getElementById("adm-p-name").value = "";
+        document.getElementById("adm-p-price").value = "";
+        document.getElementById("adm-p-qty").value = "";
+        triggerSync();
+        alert("STOCK UPDATED");
+      }
+
+      function adminSaveRoute() {
+        const name = document.getElementById("adm-r-name").value.trim();
+        if (!name) return;
+        db.routes.push({ name, shops: [] });
+        document.getElementById("adm-r-name").value = "";
+        triggerSync();
+      }
+
+      function adminSaveShop() {
+        const routeIdx = document.getElementById("adm-r-select").value;
+        const name = document.getElementById("adm-s-name").value.trim();
+        if (routeIdx === "" || !name) return;
+        db.routes[routeIdx].shops.push(name);
+        document.getElementById("adm-s-name").value = "";
+        triggerSync();
+      }
+
+      // --- ORDERING LOGIC ---
+      function renderRoutes() {
+        document.getElementById("route-selector").style.display = "block";
+        document.getElementById("shop-selector").style.display = "none";
+        document.getElementById("order-cart-ui").style.display = "none";
+
+        document.getElementById("route-selector").innerHTML = db.routes
+          .map(
+            (r, i) => `
+            <button class="btn-ghost" style="margin-bottom:10px; text-align:left;" onclick="renderShops(${i})">
+                📂 ${r.name} <span style="float:right;">&gt;</span>
+            </button>
+        `,
+          )
+          .join("");
+      }
+
+      function renderShops(idx) {
+        document.getElementById("route-selector").style.display = "none";
+        document.getElementById("shop-selector").style.display = "block";
+
+        const route = db.routes[idx];
+        let html = `<h3>${route.name} - Select Shop</h3>`;
+        html += route.shops
+          .map(
+            (s) => `
+            <button class="card" style="text-align:left; font-weight:800; padding:20px;" onclick="startOrder('${s}')">
+                🏪 ${s}
+            </button>
+        `,
+          )
+          .join("");
+        html += `<button class="btn-dark" onclick="renderRoutes()">BACK</button>`;
+        document.getElementById("shop-selector").innerHTML = html;
+      }
+
+      function startOrder(shop) {
+        activeShop = shop;
+        currentCart = [];
+        document.getElementById("shop-selector").style.display = "none";
+        document.getElementById("order-cart-ui").style.display = "block";
+        document.getElementById("order-shop-name").innerText = shop;
+        smartSearch();
+        updateCartUI();
+      }
+
+      function smartSearch() {
+        const q = document.getElementById("item-search").value.toLowerCase();
+        const matches = db.items.filter(
+          (i) => i.name.toLowerCase().includes(q) && i.stock > 0,
+        );
+        document.getElementById("item-select").innerHTML = matches
+          .map(
+            (m) => `
+            <option value="${db.items.indexOf(m)}">${m.name} - Rs.${m.price} (Avl: ${m.stock})</option>
+        `,
+          )
+          .join("");
+      }
+
+      function addToCart() {
+        const idx = document.getElementById("item-select").value;
+        if (idx === "") return;
+
+        const it = db.items[idx];
+        const qty = parseInt(document.getElementById("order-qty").value);
+        const free = parseInt(document.getElementById("order-free").value) || 0;
+
+        if (qty + free > it.stock) {
+          alert("INSUFFICIENT WAREHOUSE STOCK");
+          return;
+        }
+
+        currentCart.push({
+          name: it.name,
+          price: it.price,
+          qty: qty,
+          free: free,
         });
 
-        document.getElementById('sum-stock').innerHTML = Object.keys(stockSum).map(k => `
-            <div class="grid-3">
-                <span>${k}</span>
-                <span>${stockSum[k].loaded}</span>
-                <span style="color:var(--danger); font-weight:bold;">${stockSum[k].loaded - stockSum[k].sold}</span>
-            </div>`).join('');
-        document.getElementById('sum-cash').innerHTML = cashList.map(c => `<div class="item-row">${c}</div>`).join('');
-        document.getElementById('sum-new-credit').innerHTML = creditList.map(c => `<div class="item-row">${c}</div>`).join('');
-        document.getElementById('sum-total-cash').innerText = "Rs. " + totalCash.toFixed(2);
-    }
+        document.getElementById("order-qty").value = "1";
+        document.getElementById("order-free").value = "0";
+        document.getElementById("item-search").value = "";
+        smartSearch();
+        updateCartUI();
+      }
 
-    function renderCredit() {
-        let grand = 0; const shops = {};
-        db.sales.forEach((s, idx) => { 
-            const bal = s.total - (s.paid||0); 
-            if(s.status === 'delivered' && bal > 0.01) { 
-                if(!shops[s.shop]) shops[s.shop]=[]; 
-                shops[s.shop].push({...s, dbIdx: idx, bal}); grand+=bal; 
-            } 
+      function updateCartUI() {
+        let total = 0;
+        document.getElementById("cart-items-list").innerHTML = currentCart
+          .map((c, i) => {
+            total += c.price * c.qty;
+            return `
+                <div class="item-row">
+                    <div>
+                        <b style="display:block;">${c.name}</b>
+                        <small>Qty: ${c.qty} @ ${c.price} ${c.free > 0 ? `<span class="badge badge-free">+${c.free} Free</span>` : ""}</small>
+                    </div>
+                    <div>
+                        <b>${(c.price * c.qty).toFixed(2)}</b>
+                        <button onclick="currentCart.splice(${i},1);updateCartUI()" style="width:auto; padding:5px 10px; background:red; color:white; margin-left:10px;">X</button>
+                    </div>
+                </div>
+            `;
+          })
+          .join("");
+        document.getElementById("cart-total").innerText = total.toFixed(2);
+      }
+
+      function finalizePreOrder() {
+        if (currentCart.length === 0) return;
+
+        const sale = {
+          id: Date.now(),
+          billNo: db.config.nextBill++,
+          date: new Date().toISOString().split("T")[0],
+          rep: activeRep,
+          shop: activeShop,
+          items: [...currentCart],
+          subtotal: parseFloat(document.getElementById("cart-total").innerText),
+          discount: 0,
+          paid: 0,
+          status: "pending",
+        };
+
+        db.sales.push(sale);
+        triggerSync();
+        showV("order");
+      }
+
+      // --- BILLING LOGIC ---
+      function openInvoice(id) {
+        activeSaleObj = db.sales.find((s) => s.id === id);
+        document.getElementById("bill-shop").innerText = activeSaleObj.shop;
+        document.getElementById("bill-header-data").innerText =
+          `INV: ${activeSaleObj.billNo} | ${activeSaleObj.date} | REP: ${activeSaleObj.rep}`;
+
+        document.getElementById("bill-items-area").innerHTML =
+          activeSaleObj.items
+            .map(
+              (it) => `
+            <div class="item-row" style="font-size:0.85rem;">
+                <span>${it.name} (x${it.qty}) ${it.free > 0 ? `<br><small>Free Issue: ${it.free}</small>` : ""}</span>
+                <span>${(it.qty * it.price).toFixed(2)}</span>
+            </div>
+        `,
+            )
+            .join("");
+
+        calculateBill();
+        document.getElementById("bill-overlay").style.display = "block";
+      }
+
+      function calculateBill() {
+        const disc =
+          parseFloat(document.getElementById("bill-discount").value) || 0;
+        activeSaleObj.discount = disc;
+        activeSaleObj.netTotal = activeSaleObj.subtotal - disc;
+        document.getElementById("bill-total-pay").innerText =
+          activeSaleObj.netTotal.toFixed(2);
+      }
+
+      function completeSale(type) {
+        activeSaleObj.status = "delivered";
+        activeSaleObj.payment = type;
+        activeSaleObj.paid = type === "cash" ? activeSaleObj.netTotal : 0;
+
+        // DEDUCT STOCK (Qty + Free)
+        activeSaleObj.items.forEach((sold) => {
+          let stockItem = db.items.find(
+            (i) => i.name === sold.name && i.price === sold.price,
+          );
+          if (stockItem) {
+            stockItem.stock -= sold.qty + sold.free;
+          }
         });
-        document.getElementById('grand-credit').innerText = "Rs. " + grand.toFixed(2);
-        document.getElementById('credit-list-ui').innerHTML = Object.keys(shops).map(name => `<div class="card"><b>${name}</b>` + shops[name].map(b => `<div class="item-row"><span>${b.billNo}</span><span>Rs.${b.bal.toFixed(2)} <button class="btn-blue btn-sm" onclick="settle(${b.dbIdx})">PAY</button></span></div>`).join('') + `</div>`).join('');
-    }
-    function settle(idx) { const amt = prompt("Amount:", (db.sales[idx].total - db.sales[idx].paid).toFixed(2)); if(amt) { db.sales[idx].paid += parseFloat(amt); sync(); renderCredit(); } }
 
-    function refresh() {
-        document.getElementById('route-list').innerHTML = db.routes.map((r, i) => `<button class="btn-blue" style="margin-bottom:10px" onclick="openRoute(${i})">${r.name}</button>`).join('');
-        document.getElementById('i-item').innerHTML = `<option value="">Select Item</option>` + db.items.map((it, i) => `<option value="${i}">${it.name}</option>`).join('');
-    }
-</script>
-</body>
+        document.getElementById("bill-payment-status").innerText =
+          type + " PAYMENT RECEIVED";
+        triggerSync();
+        alert("SALE COMPLETED");
+      }
+
+      // --- REPORTING LOGIC ---
+      function generateSummary() {
+        const rep = document.getElementById("sum-rep").value;
+        const date = document.getElementById("sum-date").value;
+
+        let gross = 0,
+          profit = 0,
+          disc = 0,
+          freeCount = 0;
+        let html = "";
+
+        const filtered = db.sales.filter(
+          (s) =>
+            s.status === "delivered" &&
+            (rep === "All" || s.rep === rep) &&
+            (date === "" || s.date === date),
+        );
+
+        filtered.forEach((s) => {
+          gross += s.subtotal;
+          disc += s.discount;
+          let currentFree = 0;
+          s.items.forEach((it) => (currentFree += it.free));
+          freeCount += currentFree;
+
+          html += `
+                <div class="card" style="font-size:0.8rem; border-left: 5px solid var(--accent);">
+                    <b>${s.billNo} - ${s.shop}</b> (${s.payment.toUpperCase()})<br>
+                    <small>${s.items.map((it) => `${it.name} (x${it.qty} +F${it.free})`).join(", ")}</small><br>
+                    <b>Net: Rs. ${s.netTotal.toFixed(2)}</b>
+                </div>
+            `;
+        });
+
+        document.getElementById("sum-gross").innerText = gross.toFixed(2);
+        document.getElementById("sum-profit").innerText = (
+          (gross - disc) *
+          0.09
+        ).toFixed(2);
+        document.getElementById("sum-disc").innerText = disc.toFixed(2);
+        document.getElementById("sum-free-count").innerText = freeCount;
+        document.getElementById("summary-log-details").innerHTML =
+          html || "<p>No data for this filter.</p>";
+        document.getElementById("sum-meta-print").innerText =
+          `Period: ${date || "History"} | Rep: ${rep}`;
+      }
+
+      function renderCreditList() {
+        let total = 0;
+        const list = db.sales.filter(
+          (s) => s.status === "delivered" && s.netTotal - s.paid > 0.01,
+        );
+
+        document.getElementById("credit-data-list").innerHTML = list
+          .map((s) => {
+            const bal = s.netTotal - s.paid;
+            total += bal;
+            return `
+                <div class="item-row">
+                    <div><b>${s.shop}</b><br><small>${s.billNo} | ${s.date}</small></div>
+                    <div style="text-align:right;">
+                        <b>Rs. ${bal.toFixed(2)}</b><br>
+                        <button class="no-print" onclick="settleCredit(${s.id})" style="width:auto; padding:2px 10px; font-size:0.6rem; margin-top:5px;">SETTLE</button>
+                    </div>
+                </div>
+            `;
+          })
+          .join("");
+        document.getElementById("credit-grand-total").innerText =
+          total.toFixed(2);
+        document.getElementById("credit-print-date").innerText =
+          "Generated: " + new Date().toLocaleString();
+      }
+
+      function settleCredit(id) {
+        const sale = db.sales.find((s) => s.id === id);
+        const amt = prompt(
+          "Enter Payment Amount:",
+          (sale.netTotal - sale.paid).toFixed(2),
+        );
+        if (amt) {
+          sale.paid += parseFloat(amt);
+          triggerSync();
+          renderCreditList();
+        }
+      }
+
+      function renderInventory() {
+        document.getElementById("inventory-list").innerHTML = db.items
+          .map(
+            (it) => `
+            <div class="item-row">
+                <span>${it.name} <br><small>Price: ${it.price}</small></span>
+                <b style="${it.stock < 10 ? "color:red" : ""}">${it.stock}</b>
+            </div>
+        `,
+          )
+          .join("");
+      }
+
+      function renderDeliveryList() {
+        const pending = db.sales.filter((s) => s.status === "pending");
+        document.getElementById("pending-delivery-list").innerHTML =
+          pending
+            .map(
+              (s) => `
+            <div class="card">
+                <b>${s.shop}</b><br>
+                <small>Invoice: ${s.billNo} | Total: Rs. ${s.subtotal.toFixed(2)}</small>
+                <button class="btn-blue" style="margin-top:10px; padding:10px;" onclick="openInvoice(${s.id})">PROCESS DELIVERY</button>
+            </div>
+        `,
+            )
+            .join("") || "<p>No pending deliveries.</p>";
+      }
+
+      function refreshUI() {
+        document.getElementById("adm-r-select").innerHTML = db.routes
+          .map((r, i) => `<option value="${i}">${r.name}</option>`)
+          .join("");
+      }
+
+      function closeBill() {
+        document.getElementById("bill-overlay").style.display = "none";
+        showV("delivery");
+      }
+    </script>
+  </body>
 </html>
