@@ -3,245 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Agency POS Cloud V10</title>
+    <title>Gamirasa ERP V14.3 - Full Settlement</title>
     <style>
-        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --bg: #f8fafc; }
-        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: 800; border-bottom: 4px solid var(--accent); }
-        nav { display: flex; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
-        .nav-link { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-size: 0.7rem; font-weight: 700; color: #64748b; }
-        .nav-link.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --bg: #f1f5f9; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); color: #1e293b; }
+        header { background: var(--primary); color: white; padding: 12px; text-align: center; border-bottom: 4px solid var(--accent); }
+        .sync-status { background: #1e293b; color: #94a3b8; font-size: 0.6rem; text-align: center; padding: 4px; }
+        nav { display: flex; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
+        .nav-link { flex: 1; padding: 14px 5px; text-align: center; cursor: pointer; font-size: 0.65rem; font-weight: 700; color: #64748b; min-width: 75px; text-transform: uppercase; }
+        .nav-link.active { color: var(--accent); border-bottom: 3px solid var(--accent); background: #f8fafc; }
         .container { padding: 15px; max-width: 800px; margin: auto; padding-bottom: 100px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; margin-top: 5px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
         .btn-blue { background: var(--accent); color: white; }
         .btn-green { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
         .btn-dark { background: var(--primary); color: white; }
-        .item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-        #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #print-overlay { display: none; position: fixed; inset: 0; background: white; z-index: 9999; padding: 20px; }
-        iframe { position: absolute; width: 0; height: 0; visibility: hidden; }
+        .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; padding: 15px; overflow-y: auto; }
+        .modal { background: white; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; color: #333; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px solid #eee; }
+        @media print { .no-print { display: none; } body { background: white; } .card { border: none; box-shadow: none; } }
     </style>
 </head>
 <body>
 
-<iframe id="print-frame"></iframe>
+<div class="sync-status no-print" id="sync-info">System Online</div>
 
-<div id="login-screen">
-    <div class="card" style="width: 100%; max-width: 350px;">
-        <h2 style="text-align:center">POS CLOUD V10</h2>
-        <p style="text-align:center; font-size:0.8rem; color:gray;">System Protected</p>
-        <input type="password" id="sys-pin" placeholder="PIN" style="text-align:center; font-size: 2rem;">
-        <button class="btn-blue" onclick="checkPin()">UNLOCK</button>
-        <button onclick="location.reload(true)" style="background:none; color:#64748b; font-size:0.7rem; margin-top:20px;">Force Refresh System</button>
+<div id="login-screen" class="no-print" style="position:fixed; inset:0; background:var(--primary); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+    <h2 style="color:white;">GAMIRASA ERP V14.3</h2>
+    <div class="card" style="width:280px; text-align:center;">
+        <input type="password" id="sys-pin" placeholder="PIN" style="text-align:center;">
+        <button class="btn-blue" onclick="checkPin()">LOG IN</button>
     </div>
 </div>
 
 <div id="app-content" style="display:none">
-    <header>AGENCY POS PRO V10</header>
-    <nav>
-        <div class="nav-link active" onclick="showV('pos', this)">BILLING</div>
-        <div class="nav-link" onclick="showV('stock', this)">STOCKS</div>
-        <div class="nav-link" onclick="showV('admin', this)">REPORTS</div>
-        <div class="nav-link" onclick="showV('setup', this)">CLOUD/SETUP</div>
+    <header class="no-print">GAMIRASA DISTRIBUTION</header>
+    <nav class="no-print">
+        <div class="nav-link active" onclick="showV('order', this)">Orders</div>
+        <div class="nav-link" onclick="showV('delivery', this)">Delivery</div>
+        <div class="nav-link" onclick="showV('credit', this)">Credits</div>
+        <div class="nav-link" onclick="showV('summary', this)">Summary</div>
+        <div class="nav-link" onclick="showV('setup', this)">Setup</div>
     </nav>
 
     <div class="container">
-        <div id="v-pos">
-            <div id="route-sel"></div>
-            <div id="shop-sel" style="display:none"></div>
-            <div id="bill-ui" style="display:none">
-                <button onclick="showV('pos')" class="btn-dark" style="width:auto; padding:8px 15px">← ROUTES</button>
-                <h2 id="cur-shop"></h2>
+        <div id="v-order">
+            <div id="route-list"></div>
+            <div id="shop-list" style="display:none"></div>
+            <div id="order-ui" style="display:none">
+                <button onclick="showV('order')" class="btn-dark" style="width:auto; margin-bottom:10px;">← BACK</button>
                 <div class="card">
-                    <select id="i-rep"><option>Ishan</option><option>Rohan</option></select>
-                    <select id="i-item" onchange="upFree()"></select>
+                    <h2 id="cur-shop" style="margin:0 0 10px 0;"></h2>
+                    <select id="i-item" onchange="autoScheme()"></select>
                     <div style="display:flex; gap:10px">
-                        <input type="number" id="i-qty" value="1" oninput="upFree()" placeholder="Qty">
+                        <input type="number" id="i-qty" value="1" oninput="autoScheme()" placeholder="Qty">
                         <input type="number" id="i-free" value="0" placeholder="Free">
                     </div>
-                    <button class="btn-blue" onclick="addCart()">+ ADD TO BILL</button>
+                    <button class="btn-blue" onclick="addToOrder()">+ ADD TO LIST</button>
                 </div>
                 <div class="card">
-                    <div id="cart-list"></div>
-                    <label>Discount</label><input type="number" id="i-disc" value="0" oninput="upTotal()">
-                    <div style="display:flex; justify-content:space-between; font-size:1.5rem; font-weight:800">
-                        <span>TOTAL:</span><span id="bill-total">0.00</span>
-                    </div>
-                    <button class="btn-green" onclick="saveBill()">FINALIZE & PRINT</button>
+                    <div id="order-cart-list"></div>
+                    <h3 style="text-align:right;">Total: Rs. <span id="order-total">0.00</span></h3>
+                    <button class="btn-green" onclick="savePreOrder()">SAVE PRE-ORDER</button>
                 </div>
             </div>
         </div>
 
-        <div id="v-stock" style="display:none">
-            <div class="card"><h3>Truck Stock</h3><div id="stock-list"></div></div>
+        <div id="v-delivery" style="display:none">
+            <div id="delivery-pending-list"></div>
         </div>
 
-        <div id="v-admin" style="display:none">
+        <div id="v-credit" style="display:none">
+            <div class="card" style="background:var(--primary); color:white; text-align:center;">
+                Outstanding: <h2 id="grand-credit">Rs. 0.00</h2>
+            </div>
+            <div id="credit-list-ui"></div>
+        </div>
+
+        <div id="v-summary" style="display:none">
+            <button class="btn-blue no-print" onclick="window.print()" style="margin-bottom:15px;">🖨️ PRINT SUMMARY REPORT</button>
             <div class="card">
-                <input type="date" id="rep-date" onchange="runRep()">
-                <div id="rep-res"></div>
+                <center>
+                    <h2 style="margin:0;">GAMIRASA FOOD PRODUCT</h2>
+                    <p id="sum-date" style="margin:5px 0; font-weight:bold;"></p>
+                </center>
+                <hr>
+                <h4 style="margin-bottom:5px;">TRUCK STOCK RETURN (End Balance)</h4>
+                <div class="grid-3" style="font-weight:bold; background:#f1f5f9;">
+                    <span>Item</span><span>Loaded</span><span>Return</span>
+                </div>
+                <div id="sum-stock"></div>
+                
+                <h4 style="margin:15px 0 5px 0;">CASH COLLECTIONS</h4>
+                <div id="sum-cash"></div>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; padding-top:10px; border-top:2px solid #333;">
+                    <span>TOTAL CASH IN HAND:</span>
+                    <span id="sum-total-cash">0.00</span>
+                </div>
+
+                <h4 style="margin:15px 0 5px 0;">CREDIT SUMMARY</h4>
+                <div id="sum-new-credit"></div>
             </div>
         </div>
 
         <div id="v-setup" style="display:none">
-            <div class="card" style="background: #e0f2fe; border: 2px solid var(--accent);">
-                <h3>☁️ CLOUD DATA SYNC</h3>
-                <label>GitHub Token</label>
-                <input type="password" id="gh-token" placeholder="ghp_xxxxxxx">
-                <label>Gist ID</label>
-                <input type="text" id="gh-gist" placeholder="Gist ID (Paste here for Laptop)">
-                <div style="display:flex; gap:10px">
-                    <button class="btn-dark" onclick="cloudAction('push')">PUSH (Save Phone)</button>
-                    <button class="btn-blue" onclick="cloudAction('pull')">PULL (Get to Laptop)</button>
-                </div>
+            <div class="card">
+                <button class="btn-dark" onclick="cloudAction('pull')">🔄 FORCE CLOUD SYNC</button>
             </div>
             <div class="card">
-                <h3>Product & Route Setup</h3>
-                <input type="text" id="set-p-n" placeholder="Product Name"><input type="number" id="set-p-p" placeholder="Price">
-                <input type="number" id="set-p-s" placeholder="Truck Stock"><input type="number" id="set-p-sc" placeholder="Scheme (e.g. 12)">
-                <button class="btn-green" onclick="addItem()">SAVE PRODUCT</button>
-                <hr><input type="text" id="set-r-n" placeholder="Route Name"><button class="btn-blue" onclick="addRoute()">SAVE ROUTE</button>
-                <hr><select id="set-r-sel"></select><input type="text" id="set-s-n" placeholder="Shop Name"><button class="btn-blue" onclick="addShop()">SAVE SHOP</button>
-                <hr><button onclick="clearSystem()" style="background: #fda4af; color:#991b1b">RESET ALL LOCAL DATA</button>
+                <h3>Add Product</h3>
+                <input type="text" id="set-p-n" placeholder="Product Name">
+                <input type="number" id="set-p-p" placeholder="Price">
+                <input type="number" id="set-p-sc" placeholder="Scheme">
+                <button class="btn-green" onclick="addItem()">SAVE</button>
+                <hr>
+                <input type="text" id="set-r-n" placeholder="Route Name"><button class="btn-blue" onclick="addRoute()">SAVE ROUTE</button>
+                <hr>
+                <input type="text" id="set-s-n" placeholder="Shop Name"><button class="btn-blue" onclick="addShop()">SAVE SHOP</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="print-overlay">
-    <div id="print-data"></div>
-    <div style="display:flex; gap:10px; margin-top:20px;">
-        <button class="btn-green" onclick="doPrint()">PRINT NOW</button>
-        <button class="btn-dark" onclick="closePrint()">CLOSE</button>
+<div id="edit-overlay" class="overlay">
+    <div class="modal">
+        <h2 id="edit-title" style="margin-top:0;"></h2>
+        <div id="edit-items-area"></div>
+        <div class="card" style="background:#fff1f2; margin-top:10px;">
+            <label><b>Returns (Rs.)</b></label>
+            <input type="number" id="return-value" value="0" oninput="calcFinal()">
+        </div>
+        <div style="font-size:1.1rem; font-weight:bold;">Total Bill: Rs. <span id="edit-total">0.00</span></div>
+        <hr>
+        <label><b>Cash Received (Rs.)</b></label>
+        <input type="number" id="cash-paid" value="0">
+        <p style="font-size:0.75rem; color:var(--danger);" id="pay-warn"></p>
+        
+        <button class="btn-green" onclick="processPayment()">CONFIRM DELIVERY</button>
+        <button class="btn-danger" style="margin-top:8px;" onclick="cancelDelivery()">SHOP CLOSED</button>
+        <button onclick="closeModal()" style="margin-top:8px; background:#ddd;">CLOSE</button>
     </div>
 </div>
 
 <script>
-    // System V10 Engine
-    let db = JSON.parse(localStorage.getItem('pos_v10')) || { items: [], routes: [], sales: [], settings: { pin: "1234", token: "", gist: "" } };
-    let cart = []; let curS = "";
+    const CLOUD_TOKEN = "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";
+    const CLOUD_GIST = "0c3f0cb67d4be33a00862eb3b31e9ecf";
+    let db = JSON.parse(localStorage.getItem('pos_v14_3')) || { items: [], routes: [], sales: [], nextBill: 1, settings: { pin: "1234", setupPin: "2705" } };
+    let cart = []; let curS = ""; let editingOrder = null;
 
     function checkPin() {
         if(document.getElementById('sys-pin').value === db.settings.pin) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            refresh();
-        } else { alert("Incorrect PIN"); }
+            cloudAction('pull');
+        } else { alert("Access Denied"); }
     }
-
-    function sync() { localStorage.setItem('pos_v10', JSON.stringify(db)); refresh(); }
 
     async function cloudAction(type) {
-        const token = document.getElementById('gh-token').value;
-        let gistId = document.getElementById('gh-gist').value;
-        if(!token) return alert("Please enter GitHub Token");
-        db.settings.token = token;
-
-        const headers = { "Authorization": `token ${token}`, "Content-Type": "application/json" };
-        const body = JSON.stringify({ files: { "pos_v10_db.json": { content: JSON.stringify(db) } } });
-
+        document.getElementById('sync-info').innerText = "Syncing...";
+        const headers = { "Authorization": `token ${CLOUD_TOKEN}`, "Content-Type": "application/json" };
         try {
             if(type === 'push') {
-                const method = gistId ? "PATCH" : "POST";
-                const url = gistId ? `https://api.github.com/gists/${gistId}` : `https://api.github.com/gists`;
-                const res = await fetch(url, { method, headers, body });
-                const data = await res.json();
-                db.settings.gist = data.id;
-                document.getElementById('gh-gist').value = data.id;
-                alert("PUSH SUCCESS: Saved to Cloud!");
+                await fetch(`https://api.github.com/gists/${CLOUD_GIST}`, { method: "PATCH", headers, body: JSON.stringify({ files: { "gamirasa_erp.json": { content: JSON.stringify(db) } } }) });
             } else {
-                if(!gistId) return alert("Need Gist ID to Pull data");
-                const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers });
+                const res = await fetch(`https://api.github.com/gists/${CLOUD_GIST}`, { headers });
                 const data = await res.json();
-                db = JSON.parse(data.files["pos_v10_db.json"].content);
-                alert("PULL SUCCESS: Laptop Updated!");
+                if(data.files["gamirasa_erp.json"]) { db = JSON.parse(data.files["gamirasa_erp.json"].content); localStorage.setItem('pos_v14_3', JSON.stringify(db)); }
             }
-            sync();
-        } catch(e) { alert("Cloud Error: " + e); }
+            document.getElementById('sync-info').innerText = "✅ Cloud Synced: " + new Date().toLocaleTimeString();
+            refresh();
+        } catch(e) { document.getElementById('sync-info').innerText = "⚠️ Offline"; }
     }
+
+    function sync() { localStorage.setItem('pos_v14_3', JSON.stringify(db)); cloudAction('push'); refresh(); }
 
     function showV(id, el) {
-        ['v-pos', 'v-stock', 'v-admin', 'v-setup'].forEach(v => document.getElementById(v).style.display = 'none');
+        if(id === 'setup' && prompt("PIN:") !== db.settings.setupPin) return;
+        ['v-order', 'v-delivery', 'v-credit', 'v-summary', 'v-setup'].forEach(v => document.getElementById(v).style.display = 'none');
         document.getElementById('v-' + id).style.display = 'block';
-        if(el) {
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-        }
-        if(id === 'pos') {
-            document.getElementById('route-sel').style.display = 'block';
-            document.getElementById('shop-sel').style.display = 'none';
-            document.getElementById('bill-ui').style.display = 'none';
-        }
+        if(el) { document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+        if(id === 'order') resetOrder(); if(id === 'delivery') renderDelivery(); if(id === 'credit') renderCredit(); if(id === 'summary') renderSummary();
     }
 
-    function openR(idx) {
-        document.getElementById('route-sel').style.display = 'none';
-        document.getElementById('shop-sel').style.display = 'block';
-        document.getElementById('shop-sel').innerHTML = db.routes[idx].shops.map(s => `<button class="card" style="text-align:left; font-size:1.1rem" onclick="openB('${s}')">${s}</button>`).join('') + `<button class="btn-dark" onclick="showV('pos')">BACK</button>`;
+    // --- SETUP ---
+    function addItem() { const n=document.getElementById('set-p-n'), p=document.getElementById('set-p-p'), sc=document.getElementById('set-p-sc'); db.items.push({ name: n.value, price: parseFloat(p.value), scheme: parseInt(sc.value)||0 }); n.value=""; p.value=""; sc.value=""; sync(); }
+    function addRoute() { const r=document.getElementById('set-r-n'); db.routes.push({ name: r.value, shops: [] }); r.value=""; sync(); }
+    function addShop() { const s=document.getElementById('set-s-n'); db.routes[0].shops.push(s.value); s.value=""; sync(); }
+
+    // --- ORDER ---
+    function resetOrder() { document.getElementById('route-list').style.display = 'block'; document.getElementById('shop-list').style.display = 'none'; document.getElementById('order-ui').style.display = 'none'; }
+    function openRoute(idx) {
+        document.getElementById('route-list').style.display = 'none'; document.getElementById('shop-list').style.display = 'block';
+        let h = `<h3>${db.routes[idx].name}</h3>` + db.routes[idx].shops.map(s => `<button class="card" onclick="startOrder('${s}')">${s}</button>`).join('');
+        document.getElementById('shop-list').innerHTML = h;
     }
-    function openB(s) { curS = s; cart = []; document.getElementById('shop-sel').style.display = 'none'; document.getElementById('bill-ui').style.display = 'block'; document.getElementById('cur-shop').innerText = s; upCart(); }
-    function upFree() { const i = db.items[document.getElementById('i-item').value]; if(!i) return; document.getElementById('i-free').value = i.scheme > 0 ? Math.floor(document.getElementById('i-qty').value / i.scheme) : 0; }
-    function addCart() { 
-        const idx = document.getElementById('i-item').value; 
-        if(idx==="") return;
-        cart.push({ ...db.items[idx], qty: parseInt(document.getElementById('i-qty').value), free: parseInt(document.getElementById('i-free').value), idx });
-        upCart();
+    function startOrder(shop) { curS = shop; cart = []; document.getElementById('shop-list').style.display = 'none'; document.getElementById('order-ui').style.display = 'block'; document.getElementById('cur-shop').innerText = shop; upCart(); }
+    function autoScheme() { const it = db.items[document.getElementById('i-item').value]; if(it && it.scheme > 0) document.getElementById('i-free').value = Math.floor(document.getElementById('i-qty').value / it.scheme); }
+    function addToOrder() { const idx = document.getElementById('i-item').value; cart.push({...db.items[idx], qty: parseInt(document.getElementById('i-qty').value), free: parseInt(document.getElementById('i-free').value)}); document.getElementById('i-item').value = ""; document.getElementById('i-qty').value = "1"; document.getElementById('i-free').value = "0"; upCart(); }
+    function upCart() { let t = 0; document.getElementById('order-cart-list').innerHTML = cart.map(c => { t += (c.price*c.qty); return `<div class="item-row"><span>${c.name} x${c.qty}</span><b>${(c.price*c.qty).toFixed(2)}</b></div>` }).join(''); document.getElementById('order-total').innerText = t.toFixed(2); }
+    function savePreOrder() { db.sales.push({ id: Date.now(), billNo: "B"+db.nextBill++, shop: curS, items: [...cart], total: parseFloat(document.getElementById('order-total').innerText), status: 'pending', date: new Date().toLocaleDateString() }); sync(); showV('order'); }
+
+    // --- DELIVERY ---
+    function renderDelivery() {
+        const pending = db.sales.filter(s => s.status === 'pending');
+        document.getElementById('delivery-pending-list').innerHTML = pending.map(s => `<div class="card"><b>${s.shop}</b> (Rs.${s.total.toFixed(2)}) <button class="btn-blue btn-sm" onclick="openPayModal(${s.id})">PROCESS</button></div>`).join('');
     }
-    function upCart() { 
-        document.getElementById('cart-list').innerHTML = cart.map(c => `<div class="item-row"><span>${c.name} x${c.qty}</span><span>${(c.price*c.qty).toFixed(2)}</span></div>`).join('');
-        upTotal();
+    function openPayModal(id) {
+        editingOrder = db.sales.find(x => x.id === id);
+        document.getElementById('edit-title').innerText = editingOrder.shop;
+        document.getElementById('cash-paid').value = editingOrder.total;
+        document.getElementById('return-value').value = 0;
+        calcFinal();
+        document.getElementById('edit-overlay').style.display = 'block';
     }
-    function upTotal() { 
-        const sub = cart.reduce((s,c)=>s+(c.price*c.qty),0);
-        document.getElementById('bill-total').innerText = (sub - document.getElementById('i-disc').value).toFixed(2);
+    function calcFinal() {
+        let t = 0; editingOrder.items.forEach(it => t += (it.price * it.qty));
+        t -= (parseFloat(document.getElementById('return-value').value) || 0);
+        editingOrder.total = t;
+        document.getElementById('edit-total').innerText = t.toFixed(2);
+    }
+    function processPayment() {
+        const paid = parseFloat(document.getElementById('cash-paid').value) || 0;
+        editingOrder.paid = paid;
+        editingOrder.status = 'delivered';
+        closeModal(); sync();
+    }
+    function cancelDelivery() { editingOrder.status = 'cancelled'; closeModal(); sync(); }
+    function closeModal() { document.getElementById('edit-overlay').style.display = 'none'; renderDelivery(); }
+
+    // --- SUMMARY & RETURNS ---
+    function renderSummary() {
+        const today = new Date().toLocaleDateString();
+        document.getElementById('sum-date').innerText = today;
+        const stockSum = {}, cashList = [], creditList = [];
+        let totalCash = 0;
+
+        db.sales.filter(s => s.date === today).forEach(s => {
+            s.items.forEach(it => { 
+                if(!stockSum[it.name]) stockSum[it.name] = {loaded: 0, sold: 0};
+                stockSum[it.name].loaded += (it.qty + it.free);
+                if(s.status === 'delivered') stockSum[it.name].sold += (it.qty + it.free);
+            });
+            if(s.status === 'delivered') {
+                if(s.paid > 0) { cashList.push(`${s.shop}: Rs.${s.paid.toFixed(2)}`); totalCash += s.paid; }
+                if(s.paid < s.total) creditList.push(`${s.shop}: Rs.${(s.total - s.paid).toFixed(2)} (Bal)`);
+            }
+        });
+
+        document.getElementById('sum-stock').innerHTML = Object.keys(stockSum).map(k => `
+            <div class="grid-3">
+                <span>${k}</span>
+                <span>${stockSum[k].loaded}</span>
+                <span style="color:var(--danger); font-weight:bold;">${stockSum[k].loaded - stockSum[k].sold}</span>
+            </div>`).join('');
+        document.getElementById('sum-cash').innerHTML = cashList.map(c => `<div class="item-row">${c}</div>`).join('');
+        document.getElementById('sum-new-credit').innerHTML = creditList.map(c => `<div class="item-row">${c}</div>`).join('');
+        document.getElementById('sum-total-cash').innerText = "Rs. " + totalCash.toFixed(2);
     }
 
-    function saveBill() {
-        if(!cart.length) return;
-        const total = document.getElementById('bill-total').innerText;
-        const html = `<div style="font-family:monospace; text-align:center; color:black;"><h2>INVOICE</h2><h3>${curS}</h3><p>${new Date().toLocaleString()}</p><hr>` + 
-            cart.map(c => `<div style="display:flex; justify-content:space-between"><span>${c.name} x${c.qty}</span><span>${(c.price*c.qty).toFixed(2)}</span></div>`).join('') + 
-            `<hr><b>TOTAL: ${total}</b><p>Thank You!</p></div>`;
-        
-        cart.forEach(c => db.items[c.idx].stock -= (c.qty + c.free));
-        db.sales.push({ date: new Date().toISOString().split('T')[0], shop: curS, total: parseFloat(total), disc: parseFloat(document.getElementById('i-disc').value), html });
-        sync();
-        document.getElementById('print-data').innerHTML = html;
-        document.getElementById('print-overlay').style.display = 'block';
+    function renderCredit() {
+        let grand = 0; const shops = {};
+        db.sales.forEach((s, idx) => { 
+            const bal = s.total - (s.paid||0); 
+            if(s.status === 'delivered' && bal > 0.01) { 
+                if(!shops[s.shop]) shops[s.shop]=[]; 
+                shops[s.shop].push({...s, dbIdx: idx, bal}); grand+=bal; 
+            } 
+        });
+        document.getElementById('grand-credit').innerText = "Rs. " + grand.toFixed(2);
+        document.getElementById('credit-list-ui').innerHTML = Object.keys(shops).map(name => `<div class="card"><b>${name}</b>` + shops[name].map(b => `<div class="item-row"><span>${b.billNo}</span><span>Rs.${b.bal.toFixed(2)} <button class="btn-blue btn-sm" onclick="settle(${b.dbIdx})">PAY</button></span></div>`).join('') + `</div>`).join('');
     }
-
-    function doPrint() {
-        const frame = document.getElementById('print-frame');
-        const doc = frame.contentWindow.document;
-        doc.open(); doc.write('<html><body style="font-family:monospace;">' + document.getElementById('print-data').innerHTML + '</body></html>'); doc.close();
-        setTimeout(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }, 500);
-    }
-    function closePrint() { document.getElementById('print-overlay').style.display = 'none'; showV('pos'); }
-
-    function runRep() {
-        const d = document.getElementById('rep-date').value;
-        const sales = db.sales.filter(s => s.date === d);
-        document.getElementById('rep-res').innerHTML = `<h3>Day Total: ${sales.reduce((s,x)=>s+x.total,0).toFixed(2)}</h3>` + 
-            sales.map(s => `<div class="item-row"><b>${s.shop}</b> <span>${s.total.toFixed(2)}</span></div>`).join('');
-    }
-
-    function addItem() { db.items.push({ name: document.getElementById('set-p-n').value, price: parseFloat(document.getElementById('set-p-p').value), stock: parseInt(document.getElementById('set-p-s').value), scheme: parseInt(document.getElementById('set-p-sc').value) }); sync(); }
-    function addRoute() { db.routes.push({ name: document.getElementById('set-r-n').value, shops: [] }); sync(); }
-    function addShop() { db.routes[document.getElementById('set-r-sel').value].shops.push(document.getElementById('set-s-n').value); sync(); }
+    function settle(idx) { const amt = prompt("Amount:", (db.sales[idx].total - db.sales[idx].paid).toFixed(2)); if(amt) { db.sales[idx].paid += parseFloat(amt); sync(); renderCredit(); } }
 
     function refresh() {
-        document.getElementById('route-sel').innerHTML = db.routes.map((r,i) => `<button class="btn-blue" style="margin-bottom:10px" onclick="openR(${i})">${r.name}</button>`).join('');
-        document.getElementById('set-r-sel').innerHTML = db.routes.map((r,i) => `<option value="${i}">${r.name}</option>`).join('');
-        document.getElementById('i-item').innerHTML = `<option value="">-- Select Item --</option>` + db.items.map((it,i) => `<option value="${i}">${it.name}</option>`).join('');
-        document.getElementById('stock-list').innerHTML = db.items.map(it => `<div class="item-row"><span>${it.name}</span><b>${it.stock}</b></div>`).join('');
-        document.getElementById('gh-token').value = db.settings.token || "";
-        document.getElementById('gh-gist').value = db.settings.gist || "";
+        document.getElementById('route-list').innerHTML = db.routes.map((r, i) => `<button class="btn-blue" style="margin-bottom:10px" onclick="openRoute(${i})">${r.name}</button>`).join('');
+        document.getElementById('i-item').innerHTML = `<option value="">Select Item</option>` + db.items.map((it, i) => `<option value="${i}">${it.name}</option>`).join('');
     }
-
-    function clearSystem() { if(confirm("This will erase all items/shops from this device. Proceed?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
